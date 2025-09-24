@@ -1,0 +1,19 @@
+body {
+    background-color: #f0f8ff; /* světlá modrá */
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+
+button {
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #005fa3;
+}

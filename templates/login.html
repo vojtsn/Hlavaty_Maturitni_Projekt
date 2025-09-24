@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <title>InfoBox – Přihlášení</title>
+</head>
+<body>
+  <h1>Přihlášení do InfoBoxu</h1>
+  <form method="post">
+    <label for="username">Uživatelské jméno:</label><br>
+    <input type="text" id="username" name="username" required><br><br>
+
+    <label for="password">Heslo:</label><br>
+    <input type="password" id="password" name="password" required><br><br>
+
+    <button type="submit">Přihlásit</button>
+  </form>
+
+  {% if error %}
+    <p style="color:red">{{ error }}</p>
+  {% endif %}
+
+  <p><a href="{{ url_for('index') }}">← Zpět na hlavní stránku</a></p>
+</body>
+</html>
