@@ -1,22 +1,15 @@
-<!doctype html>
-<html lang="cs">
-<head>
-  <meta charset="utf-8">
-  <title>InfoBox – Domů</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-  <h1>Vítejte v InfoBoxu</h1>
+{% extends "base.html" %}
 
-  {% if username %}
+{% block title %}InfoBox – Domů{% endblock %}
+
+{% block content %}
+<h1>Vítejte v InfoBoxu</h1>
+
+{% if username %}
     <p>Přihlášený uživatel: <strong>{{ username }}</strong></p>
-    <p><a href="{{ url_for('logout') }}">Odhlásit se</a></p>
-  {% else %}
+{% else %}
     <p>Nejste přihlášený.</p>
-    <p><a href="{{ url_for('login') }}"><button>Přejít na přihlášení</button></a></p>
-  {% endif %}
+{% endif %}
 
-  <hr>
-  <p>Tady bude seznam článků a další obsah novin...</p>
-</body>
-</html>
+<p>Tady bude seznam článků a další obsah novin...</p>
+{% endblock %}

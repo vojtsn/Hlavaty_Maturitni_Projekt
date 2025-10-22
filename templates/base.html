@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="cs">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}InfoBox{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <!-- Hlavička / rozcestník -->
+        <div class="header">
+            <a href="{{ url_for('index') }}"><button>Home</button></a>
+            {% if username %}
+                <span>Přihlášený: {{ username }}</span>
+                <a href="{{ url_for('logout') }}"><button>Odhlásit se</button></a>
+            {% else %}
+                <a href="{{ url_for('login') }}"><button>Přihlásit</button></a>
+                <a href="{{ url_for('register') }}"><button>Registrovat</button></a>
+            {% endif %}
+        </div>
+        <hr>
+
+        <!-- Hlavní obsah -->
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

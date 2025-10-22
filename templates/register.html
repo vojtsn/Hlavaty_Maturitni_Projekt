@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}InfoBox – Přihlášení{% endblock %}
+{% block title %}InfoBox – Registrace{% endblock %}
 
 {% block content %}
-<h1>Přihlášení do InfoBoxu</h1>
+<h1>Registrace do InfoBoxu</h1>
 
 {% if error %}
     <p style="color:red;">{{ error }}</p>
@@ -13,9 +13,12 @@
     <label for="username">Uživatelské jméno:</label><br>
     <input type="text" id="username" name="username" required><br><br>
 
+    <label for="email">Email:</label><br>
+    <input type="email" id="email" name="email" required><br><br>
+
     <label for="password">Heslo:</label><br>
     <input type="password" id="password" name="password" required><br><br>
 
-    <button type="submit">Přihlásit</button>
+    <button type="submit">Registrovat</button>
 </form>
 {% endblock %}

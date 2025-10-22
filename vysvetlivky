@@ -1,0 +1,5 @@
+22. 10. 2025:
+InfoBox - zpravodajský kanál/webová stránka. Uživatel si může vytvořit účet a přihlásit se
+Přihlášení je udělané pomocí sessions, uživatelská data jsou uložena v databázi
+vyuka12 v tabulce "users". Hesla uživatelů jsou šifrovaná pomocí werkzeug.
+Uživatelské jméno při přihlášení nerespektuje velká/malá písmena.
