@@ -31,6 +31,28 @@
           {% if a.perex %}
             <p class="article-perex">{{ a.perex }}</p>
           {% endif %}
+            <div class="like-row">
+  {% if session.get("username") %}
+    <form method="post"
+          action="{{ url_for('main.like_article', article_id=a.id) }}">
+      <button type="submit"
+              class="like-btn"
+              title="Lajk">
+        ♥
+      </button>
+    </form>
+  {% else %}
+    <span class="like-btn disabled" title="Přihlas se pro lajkování">
+      ♥
+    </span>
+  {% endif %}
+
+  <a class="like-count"
+     href="{{ url_for('main.article_likes', article_id=a.id) }}">
+    {{ a.like_count() }} lajků
+  </a>
+</div>
+
         </article>
       {% endfor %}
     </div>

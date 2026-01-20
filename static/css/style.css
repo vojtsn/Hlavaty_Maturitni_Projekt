@@ -1,30 +1,68 @@
+/* ===== ZÁKLAD ===== */
+
 body {
-    background-color: ghostwhite; /* světlá modrá */
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* LIGHT MODE */
+body.light {
+  background-color: ghostwhite; /* světlá modrá */
+  color: #111;
+}
+
+/* DARK MODE */
+body.dark {
+  background-color: #0f1115;
+  color: #e6e6e6;
+}
+
+/* ===== BUTTONS ===== */
 
 button {
-    background-color: #0077cc;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    border-radius: 4px;
+  border: none;
+  padding: 10px 15px;
+  cursor: pointer;
+  border-radius: 4px;
 }
 
-button:hover {
-    background-color: #005fa3;
+body.light button {
+  background-color: #0077cc;
+  color: white;
 }
-/* Sticky navbar */
+
+body.light button:hover {
+  background-color: #005fa3;
+}
+
+body.dark button {
+  background-color: #2563eb;
+  color: white;
+}
+
+body.dark button:hover {
+  background-color: #1d4ed8;
+}
+
+/* ===== NAVBAR ===== */
+
 .navbar {
   position: sticky;
   top: 0;
   z-index: 1000;
+  padding: 10px 20px;
+}
+
+body.light .navbar {
   background: white;
   border-bottom: 1px solid #e6e6e6;
-  padding: 10px 20px;
+}
+
+body.dark .navbar {
+  background: #161a22;
+  border-bottom: 1px solid #2a2f3a;
 }
 
 .nav-inner {
@@ -36,14 +74,22 @@ button:hover {
 .brand {
   text-decoration: none;
   font-weight: 700;
+}
+
+body.light .brand {
   color: #0077cc;
+}
+
+body.dark .brand {
+  color: #9ecbff;
 }
 
 .page {
   padding-top: 10px;
 }
 
-/* Right side links */
+/* ===== NAV LINKS ===== */
+
 .nav-right {
   display: flex;
   align-items: center;
@@ -52,27 +98,40 @@ button:hover {
 
 .nav-link {
   text-decoration: none;
-  color: #0077cc;
   font-weight: 600;
+}
+
+body.light .nav-link {
+  color: #0077cc;
+}
+
+body.dark .nav-link {
+  color: #9ecbff;
 }
 
 .btn-link {
   padding: 8px 12px;
   border-radius: 6px;
+}
+
+body.light .btn-link {
   background: #0077cc;
   color: white;
 }
 
-/* User dropdown */
+body.dark .btn-link {
+  background: #2563eb;
+  color: white;
+}
+
+/* ===== USER DROPDOWN ===== */
+
 .user-menu {
   position: relative;
   display: inline-block;
 }
 
-/* Tlačítko */
 .user-btn {
-  background-color: #0077cc;
-  color: white;
   border: none;
   padding: 8px 12px;
   border-radius: 6px;
@@ -80,33 +139,49 @@ button:hover {
   font-weight: 600;
 }
 
-/* Dropdown */
+body.light .user-btn {
+  background-color: #0077cc;
+  color: white;
+}
+
+body.dark .user-btn {
+  background-color: #2563eb;
+  color: white;
+}
+
 .dropdown {
   display: none;
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);  /* klidně nech 6px mezeru */
+  top: calc(100% + 6px);
   min-width: 160px;
-  background-color: white;
-  border: 1px solid #e6e6e6;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   z-index: 2000;
 }
 
-/* Neviditelný most přes mezeru (zásadní fix) */
+body.light .dropdown {
+  background-color: white;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+body.dark .dropdown {
+  background-color: #171a21;
+  border: 1px solid #2a2f3a;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+}
+
 .user-menu::after {
   content: "";
   position: absolute;
   right: 0;
   top: 100%;
-  height: 6px;            /* MUSÍ sedět s tou mezerou nahoře (6px) */
+  height: 6px;
   width: 100%;
   background: transparent;
 }
 
-/* Otevření menu */
 .user-menu:hover .dropdown,
 .user-menu:focus-within .dropdown {
   display: block;
@@ -116,13 +191,26 @@ button:hover {
   display: block;
   padding: 10px 12px;
   text-decoration: none;
+}
+
+body.light .dropdown a {
   color: #333;
 }
 
-.dropdown a:hover {
+body.dark .dropdown a {
+  color: #e6e6e6;
+}
+
+body.light .dropdown a:hover {
   background-color: #f4f7fb;
 }
-/* layout */
+
+body.dark .dropdown a:hover {
+  background-color: #202634;
+}
+
+/* ===== LAYOUT ===== */
+
 .container {
   max-width: 980px;
   margin: 0 auto;
@@ -133,7 +221,14 @@ button:hover {
   margin: 10px 0 18px;
   font-size: 28px;
   font-weight: 800;
+}
+
+body.light .page-title {
   color: #111;
+}
+
+body.dark .page-title {
+  color: #f1f5f9;
 }
 
 .articles {
@@ -141,20 +236,39 @@ button:hover {
   gap: 14px;
 }
 
-/* article card */
+/* ===== ARTICLE CARD ===== */
+
 .article-card {
-  background: #fff;
-  border: 1px solid #e9e9e9;
   border-radius: 12px;
   padding: 16px 18px;
+}
+
+body.light .article-card {
+  background: #fff;
+  border: 1px solid #e9e9e9;
   box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+body.dark .article-card {
+  background: #171a21;
+  border: 1px solid #2a2f3a;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.25);
 }
 
 .article-title {
   margin: 0 0 8px;
   font-size: 20px;
   line-height: 1.25;
+}
+
+body.light .article-title,
+body.light .article-title a {
   color: #111;
+}
+
+body.dark .article-title,
+body.dark .article-title a {
+  color: #e6e6e6;
 }
 
 .article-meta {
@@ -162,8 +276,15 @@ button:hover {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: #666;
   margin-bottom: 10px;
+}
+
+body.light .article-meta {
+  color: #666;
+}
+
+body.dark .article-meta {
+  color: #9aa4b2;
 }
 
 .meta-sep {
@@ -174,19 +295,33 @@ button:hover {
   margin: 0;
   font-size: 15px;
   line-height: 1.55;
+}
+
+body.light .article-perex {
   color: #222;
 }
 
-.empty {
-  color: #666;
+body.dark .article-perex {
+  color: #d1d5db;
 }
-/* detail článku */
+
+/* ===== ARTICLE DETAIL ===== */
+
 .article-detail {
-  background: #fff;
-  border: 1px solid #e9e9e9;
   border-radius: 14px;
   padding: 24px 26px;
+}
+
+body.light .article-detail {
+  background: #fff;
+  border: 1px solid #e9e9e9;
   box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+}
+
+body.dark .article-detail {
+  background: #171a21;
+  border: 1px solid #2a2f3a;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.25);
 }
 
 .detail-title {
@@ -204,14 +339,147 @@ button:hover {
 .article-content {
   font-size: 16px;
   line-height: 1.7;
+}
+
+body.light .article-content {
   color: #111;
 }
 
-.article-title a {
+body.dark .article-content {
+  color: #e6e6e6;
+}
+
+/* ===== PROFILE ===== */
+
+.profile-name {
+  margin-bottom: 24px;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.profile-card {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  padding: 24px;
+  border-radius: 14px;
+  max-width: 720px;
+}
+
+body.light .profile-card {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+}
+
+body.dark .profile-card {
+  background: #171a21;
+  border: 1px solid #2a2f3a;
+}
+
+.profile-avatar .avatar {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+body.light .profile-avatar .avatar {
+  border: 1px solid #ddd;
+}
+
+body.dark .profile-avatar .avatar {
+  border: 1px solid #2a2f3a;
+}
+
+/* ===== BUTTONS VARIANTS ===== */
+
+.btn {
+  display: inline-block;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
   text-decoration: none;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background: #0077cc;
+  color: #fff;
+}
+
+body.dark .btn-primary {
+  background: #2563eb;
+}
+
+body.light .btn-secondary {
+  background: #f1f3f5;
   color: #111;
 }
 
-.article-title a:hover {
-  text-decoration: underline;
+body.dark .btn-secondary {
+  background: #202634;
+  color: #e6e6e6;
+}
+
+/* ===== FILE INPUT ===== */
+
+.file-label {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  width: fit-content;
+}
+
+body.light .file-label {
+  background: #eee;
+  color: #111;
+}
+
+body.dark .file-label {
+  background: #202634;
+  color: #e6e6e6;
+}
+.like-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.like-btn {
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* aby to nevypadalo jak obří default button */
+body.light .like-btn {
+  background: #fff;
+  color: #d11a2a;
+  border: 1px solid #e9e9e9;
+}
+
+body.dark .like-btn {
+  background: #171a21;
+  color: #ff6b7a;
+  border: 1px solid #2a2f3a;
+}
+
+.like-count {
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.likes-list {
+  padding-left: 18px;
+}
+
+.like-time {
+  opacity: 0.7;
+  font-size: 13px;
+  margin-left: 6px;
 }

@@ -28,6 +28,18 @@
     <div class="article-content">
       {{ article.content | replace('\n', '<br>') | safe }}
     </div>
+      <div class="like-row">
+  <form method="post" action="{{ url_for('main.like_article', article_id=article.id) }}">
+    <button type="submit" class="like-btn" title="Lajk">
+      ♥
+    </button>
+  </form>
+
+  <a class="like-count" href="{{ url_for('main.article_likes', article_id=article.id) }}">
+    {{ article.like_count }} lajků
+  </a>
+</div>
+
 
   </article>
 

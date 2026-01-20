@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+  <h2>Lajky – {{ article.title }}</h2>
+
+  <p>
+    <a href="{{ url_for('main.clanek_detail', article_id=article.id) }}">← zpět na článek</a>
+  </p>
+
+  {% if likes|length == 0 %}
+    <p>Zatím bez lajků.</p>
+  {% else %}
+    <ul class="likes-list">
+      {% for like in likes %}
+        <li>
+          <a href="{{ url_for('main.public_profile', username=like.user.username) }}">
+            {{ like.user.display_name or like.user.username }}
+          </a>
+          <span class="like-time">({{ like.created_at.strftime("%d.%m.%Y %H:%M") }})</span>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+{% endblock %}

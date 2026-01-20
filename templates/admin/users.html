@@ -1,0 +1,38 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2>Admin – Uživatelé</h2>
+
+<p>
+  Přihlášen: <b>{{ session.get("admin_username") }}</b>
+  | <a href="{{ url_for('admin.logout') }}">Odhlásit</a>
+</p>
+
+<table>
+  <tr>
+    <th>ID</th>
+    <th>Username</th>
+    <th>Email</th>
+    <th>Role</th>
+    <th>Force</th>
+    <th>Akce</th>
+  </tr>
+
+  {% for u in users %}
+  <tr>
+    <td>{{ u.id }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.email }}</td>
+    <td>{{ u.role }}</td>
+    <td>{{ "ANO" if u.force_password_change else "NE" }}</td>
+    <td>
+      <form method="post"
+            action="{{ url_for('admin.reset_password', user_id=u.id) }}"
+            onsubmit="return confirm('Resetovat heslo pro {{u.username}}?');">
+        <button type="submit">Reset hesla</button>
+      </form>
+    </td>
+  </tr>
+  {% endfor %}
+</table>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}{{ user.display_name or user.username }} – Profil{% endblock %}
+
+{% block content %}
+<div class="container profile">
+
+  <h1 class="profile-name">{{ user.display_name or user.username }}</h1>
+
+  <div class="profile-card">
+    <div class="profile-avatar">
+      <img class="avatar"
+           <img class="avatar"
+     src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default.png')) }}"
+     alt="Profilový obrázek">
+
+    </div>
+
+    <div class="profile-info">
+      {% if user.bio %}
+        <p class="profile-bio">{{ user.bio }}</p>
+      {% else %}
+        <p class="profile-bio empty">Uživatel zatím nemá bio.</p>
+      {% endif %}
+
+      {% if user.birth_date %}
+        <p><strong>Datum narození:</strong> {{ user.birth_date.strftime('%d.%m.%Y') }}</p>
+      {% endif %}
+
+      {% if user.gender %}
+        <p><strong>Pohlaví:</strong> {{ user.gender }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

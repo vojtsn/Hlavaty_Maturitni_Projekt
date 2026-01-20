@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <title>InfoBox Admin</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<nav style="margin-bottom: 16px;">
+  <a href="{{ url_for('admin.users') }}">Uživatelé</a>
+  {% if session.get("admin_logged_in") %}
+    | <a href="{{ url_for('admin.logout') }}">Odhlásit</a>
+  {% else %}
+    | <a href="{{ url_for('admin.login') }}">Přihlásit</a>
+  {% endif %}
+</nav>
+
+{% block content %}{% endblock %}
+
+</body>
+</html>

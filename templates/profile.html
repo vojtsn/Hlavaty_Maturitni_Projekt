@@ -1,15 +1,65 @@
 {% extends "base.html" %}
-
-{% block title %}InfoBox – Profil{% endblock %}
+{% block title %}Můj profil – InfoBox{% endblock %}
 
 {% block content %}
-<h1>Můj profil</h1>
+<div class="container profile">
 
-{% if user %}
-  <p><strong>Uživatelské jméno:</strong> {{ user.username }}</p>
-  <p><strong>Email:</strong> {{ user.email }}</p>
-{% else %}
-  <p>Uživatel nenalezen.</p>
-{% endif %}
+  <h1 class="profile-name">{{ user.display_name or user.username }}</h1>
 
+  <div class="profile-card">
+
+    <!-- AVATAR -->
+    <div class="profile-avatar">
+      <img class="avatar"
+           src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default.png')) }}"
+           alt="Profilový obrázek">
+    </div>
+
+    <!-- INFO -->
+    <div class="profile-info">
+
+      {% if user.bio %}
+        <p class="profile-bio">{{ user.bio }}</p>
+      {% else %}
+        <p class="profile-bio empty">Zatím nemáš vyplněné bio.</p>
+      {% endif %}
+
+      {% if user.birth_date %}
+        <p><strong>Datum narození:</strong>
+          {{ user.birth_date.strftime('%d.%m.%Y') }}
+        </p>
+      {% endif %}
+
+      {% if user.gender %}
+        <p><strong>Pohlaví:</strong> {{ user.gender }}</p>
+      {% endif %}
+
+      <!-- AKCE -->
+      <div class="profile-actions">
+        <a class="btn btn-secondary"
+           href="{{ url_for('main.edit_profile') }}">
+          Upravit profil
+        </a>
+
+        <form method="post"
+              action="{{ url_for('main.upload_avatar') }}"
+              enctype="multipart/form-data"
+              class="avatar-form">
+
+          <label class="file-label">
+            Vybrat nový obrázek
+            <input type="file" name="avatar" accept="image/*" hidden>
+          </label>
+
+          <button type="submit" class="btn btn-primary">
+            Změnit profilový obrázek
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
 {% endblock %}

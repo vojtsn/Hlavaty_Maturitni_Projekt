@@ -1,0 +1,12 @@
+{% extends "admin/base.html" %}
+
+{% block content %}
+<h2>Reset hotový</h2>
+
+<p>Uživatel: <b>{{ username }}</b></p>
+<p>Dočasné heslo: <b style="font-size:1.3em;">{{ temp }}</b></p>
+
+<p>(Po opuštění stránky už nebude znovu viditelné.)</p>
+
+<p><a href="{{ url_for('admin.users') }}">Zpět na seznam</a></p>
+{% endblock %}

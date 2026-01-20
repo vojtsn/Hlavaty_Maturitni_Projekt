@@ -11,3 +11,8 @@ Uživatelé mají přidělené role (user/editor/admin). Defaultně je to user a
 Editorská aplikace editor_app.py (v terminálu příkaz 'python editor_app.py'
 Přidán API token pro autorizaci pygame aplikace
 Vytvořeny tabulky articles a api_tokens
+Reset hesla - přes extra admin aplikaci na jinym portu
+Uživatel si může nastavit PFP, bio, pohlaví, datum narození
+Rozdělení profilů na veřejnou část a uživatelskou část
+Light mode a Dark mode (bolely mě z toho oči) - později bude dotažené do konce
+Funkce lajkování článků - ukládá se do tabulky, lajkovat mohou pouze přihlášení uživatelé
