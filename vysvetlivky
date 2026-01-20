@@ -3,3 +3,11 @@ InfoBox - zpravodajský kanál/webová stránka. Uživatel si může vytvořit �
 Přihlášení je udělané pomocí sessions, uživatelská data jsou uložena v databázi
 vyuka12 v tabulce "users". Hesla uživatelů jsou šifrovaná pomocí werkzeug.
 Uživatelské jméno při přihlášení nerespektuje velká/malá písmena.
+
+20. 1. 2026:
+Rozdělení app.py na více souborů kvůli přehlednosti
+Vytvoření funkčnosti článků
+Uživatelé mají přidělené role (user/editor/admin). Defaultně je to user a jsou uloženy v users
+Editorská aplikace editor_app.py (v terminálu příkaz 'python editor_app.py'
+Přidán API token pro autorizaci pygame aplikace
+Vytvořeny tabulky articles a api_tokens

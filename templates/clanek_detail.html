@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ article.title }} – InfoBox{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <article class="article-detail">
+
+    <h1 class="detail-title">{{ article.title }}</h1>
+
+    <div class="article-meta">
+      <span>
+        {{ article.created_at.strftime('%d.%m.%Y %H:%M') }}
+      </span>
+      <span class="meta-sep">•</span>
+      <span>
+        autor: {{ article.author.username }}
+      </span>
+    </div>
+
+    {% if article.perex %}
+      <p class="article-perex detail-perex">
+        {{ article.perex }}
+      </p>
+    {% endif %}
+
+    <div class="article-content">
+      {{ article.content | replace('\n', '<br>') | safe }}
+    </div>
+
+  </article>
+
+</div>
+{% endblock %}

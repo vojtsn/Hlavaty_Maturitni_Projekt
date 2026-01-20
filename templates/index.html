@@ -3,13 +3,39 @@
 {% block title %}InfoBox – Domů{% endblock %}
 
 {% block content %}
-<h1>Vítejte v InfoBoxu</h1>
+<div class="container">
+  <h2 class="page-title">Nejnovější články</h2>
 
-{% if username %}
-    <p>Přihlášený uživatel: <strong>{{ username }}</strong></p>
-{% else %}
-    <p>Nejste přihlášený.</p>
-{% endif %}
+  {% if articles and articles|length > 0 %}
+    <div class="articles">
+      {% for a in articles %}
+        <article class="article-card">
+          <h3 class="article-title">
+            <a href="{{ url_for('main.clanek_detail', article_id=a.id) }}">
+                {{ a.title }}
+            </a>
 
-<p>Tady bude seznam článků a další obsah novin...</p>
+          </h3>
+
+
+          <div class="article-meta">
+            <span class="meta-item">
+              {{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}
+            </span>
+            <span class="meta-sep">•</span>
+            <span class="meta-item">
+              autor: {{ a.author.username if a.author else ('id ' ~ a.author_id) }}
+            </span>
+          </div>
+
+          {% if a.perex %}
+            <p class="article-perex">{{ a.perex }}</p>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">Zatím tu nejsou žádné články.</p>
+  {% endif %}
+</div>
 {% endblock %}

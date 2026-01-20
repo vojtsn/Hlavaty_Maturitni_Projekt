@@ -1,27 +1,56 @@
 <!doctype html>
 <html lang="cs">
 <head>
-    <meta charset="utf-8">
-    <title>{% block title %}InfoBox{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <!-- Hlavička / rozcestník -->
-        <div class="header">
-            <a href="{{ url_for('index') }}"><button>Home</button></a>
-            {% if username %}
-                <span>Přihlášený: {{ username }}</span>
-                <a href="{{ url_for('logout') }}"><button>Odhlásit se</button></a>
-            {% else %}
-                <a href="{{ url_for('login') }}"><button>Přihlásit</button></a>
-                <a href="{{ url_for('register') }}"><button>Registrovat</button></a>
-            {% endif %}
-        </div>
-        <hr>
+  <meta charset="utf-8">
 
-        <!-- Hlavní obsah -->
-        {% block content %}{% endblock %}
+  <title>{% block title %}InfoBox{% endblock %}</title>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+  <nav class="navbar">
+    <div class="nav-inner">
+
+      <div class="nav-left">
+        <a class="brand" href="{{ url_for('main.index') }}">InfoBox</a>
+      </div>
+
+      <div class="nav-right">
+        {% if session.get('username') %}
+
+          <div class="user-menu">
+            <button class="user-btn" type="button">
+              {{ session.get('username') }} ▾
+            </button>
+
+            <div class="dropdown">
+              <a href="{{ url_for('main.profile') }}">Profil</a>
+              <a href="{{ url_for('auth.logout') }}">Odhlásit</a>
+            </div>
+          </div>
+
+        {% else %}
+
+          <a class="nav-link" href="{{ url_for('auth.login') }}">Přihlásit</a>
+          <a class="nav-link btn-link" href="{{ url_for('auth.register') }}">Registrovat</a>
+
+        {% endif %}
+      </div>
+
     </div>
+  </nav>
+  {% if session.get('username') and session.get('role') in ['admin', 'editor', 'moderator'] %}
+  <a class="nav-link btn-link" href="{{ url_for('main.editor_info') }}">
+    Přidat článek
+  </a>
+{% endif %}
+
+
+  <main class="page">
+    {% block content %}{% endblock %}
+  </main>
+
 </body>
 </html>

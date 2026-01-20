@@ -17,3 +17,201 @@ button {
 button:hover {
     background-color: #005fa3;
 }
+/* Sticky navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: white;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 10px 20px;
+}
+
+.nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  text-decoration: none;
+  font-weight: 700;
+  color: #0077cc;
+}
+
+.page {
+  padding-top: 10px;
+}
+
+/* Right side links */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #0077cc;
+  font-weight: 600;
+}
+
+.btn-link {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0077cc;
+  color: white;
+}
+
+/* User dropdown */
+.user-menu {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tlačítko */
+.user-btn {
+  background-color: #0077cc;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Dropdown */
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);  /* klidně nech 6px mezeru */
+  min-width: 160px;
+  background-color: white;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  z-index: 2000;
+}
+
+/* Neviditelný most přes mezeru (zásadní fix) */
+.user-menu::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 100%;
+  height: 6px;            /* MUSÍ sedět s tou mezerou nahoře (6px) */
+  width: 100%;
+  background: transparent;
+}
+
+/* Otevření menu */
+.user-menu:hover .dropdown,
+.user-menu:focus-within .dropdown {
+  display: block;
+}
+
+.dropdown a {
+  display: block;
+  padding: 10px 12px;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown a:hover {
+  background-color: #f4f7fb;
+}
+/* layout */
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.page-title {
+  margin: 10px 0 18px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #111;
+}
+
+.articles {
+  display: grid;
+  gap: 14px;
+}
+
+/* article card */
+.article-card {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+.article-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  line-height: 1.25;
+  color: #111;
+}
+
+.article-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 10px;
+}
+
+.meta-sep {
+  color: #bbb;
+}
+
+.article-perex {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: #222;
+}
+
+.empty {
+  color: #666;
+}
+/* detail článku */
+.article-detail {
+  background: #fff;
+  border: 1px solid #e9e9e9;
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.04);
+}
+
+.detail-title {
+  margin: 0 0 14px;
+  font-size: 34px;
+  line-height: 1.15;
+}
+
+.detail-perex {
+  font-size: 18px;
+  font-weight: 500;
+  margin: 18px 0 22px;
+}
+
+.article-content {
+  font-size: 16px;
+  line-height: 1.7;
+  color: #111;
+}
+
+.article-title a {
+  text-decoration: none;
+  color: #111;
+}
+
+.article-title a:hover {
+  text-decoration: underline;
+}
