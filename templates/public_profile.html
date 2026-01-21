@@ -9,9 +9,9 @@
   <div class="profile-card">
     <div class="profile-avatar">
       <img class="avatar"
-           <img class="avatar"
      src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default.png')) }}"
      alt="Profilový obrázek">
+
 
     </div>
 
@@ -29,8 +29,86 @@
       {% if user.gender %}
         <p><strong>Pohlaví:</strong> {{ user.gender }}</p>
       {% endif %}
+        <p>
+          <strong>Sleduje:</strong> {{ user.following_count() }}
+          <span class="meta-sep">•</span>
+          <strong>Sledující:</strong> {{ user.followers_count() }}
+        </p>
+
+        {% if session.get("username") and (session.get("username") != user.username) %}
+          <form method="post" action="{{ url_for('main.toggle_follow', username=user.username) }}">
+            <button type="submit" class="btn btn-primary">
+              {% if current_user and current_user.is_following(user) %}
+                Přestat sledovat
+              {% else %}
+                Sledovat
+              {% endif %}
+            </button>
+          </form>
+        {% endif %}
+
     </div>
   </div>
+  <!-- KOMENTÁŘE UŽIVATELE -->
+
+    <div class="profile-activity-grid">
+  <div class="profile-card comments-card">
+    <h2 class="comments-title">Komentáře uživatele</h2>
+
+    {% if comments and comments|length > 0 %}
+      <div class="comments-list">
+        {% for c in comments %}
+          <div class="comment-item">
+            <div class="comment-meta">
+              <a class="comment-article"
+                 href="{{ url_for('main.clanek_detail', article_id=c.article.id) }}">
+                {{ c.article.title }}
+              </a>
+
+              <span class="comment-dot">•</span>
+              <span class="comment-time">{{ c.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+
+
+            <div class="comment-content">{{ c.content }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="profile-bio empty">Uživatel zatím nenapsal žádné komentáře.</p>
+    {% endif %}
+  </div>
+    <!-- ODPOVĚDI UŽIVATELE -->
+<div class="profile-card comments-card">
+  <h2 class="comments-title">Odpovědi uživatele</h2>
+
+  {% if replies and replies|length > 0 %}
+    <div class="comments-list">
+      {% for r in replies %}
+        <div class="comment-item">
+          <div class="comment-meta">
+            Odpověď na komentář uživatele
+            <strong>{{ r.comment.user.display_name or r.comment.user.username }}</strong>
+            pod článkem
+            <a class="comment-article"
+               href="{{ url_for('main.clanek_detail', article_id=r.comment.article_id) }}#comment-{{ r.comment.id }}">
+              {{ r.comment.article.title }}
+            </a>
+            <span class="comment-dot">•</span>
+            <span class="comment-time">{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+          </div>
+
+          <div class="comment-content">{{ r.content }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="profile-bio empty">Uživatel zatím nenapsal žádné odpovědi.</p>
+  {% endif %}
+</div>
+        </div>
+
+
 
 </div>
 {% endblock %}

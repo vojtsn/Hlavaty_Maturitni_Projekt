@@ -15,33 +15,185 @@
       </span>
       <span class="meta-sep">•</span>
       <span>
-        autor: {{ article.author.username }}
+        Autor:
+        <a href="{{ url_for('main.public_profile', username=article.author.username) }}">
+          {{ article.author.display_name or article.author.username }}
+        </a>
       </span>
     </div>
 
     {% if article.perex %}
       <p class="article-perex detail-perex">
-        {{ article.perex }}
+        {{ article.perex | safe }}
       </p>
     {% endif %}
 
     <div class="article-content">
-      {{ article.content | replace('\n', '<br>') | safe }}
+      {{ article.content | safe }}
     </div>
-      <div class="like-row">
-  <form method="post" action="{{ url_for('main.like_article', article_id=article.id) }}">
-    <button type="submit" class="like-btn" title="Lajk">
-      ♥
-    </button>
-  </form>
 
-  <a class="like-count" href="{{ url_for('main.article_likes', article_id=article.id) }}">
-    {{ article.like_count }} lajků
-  </a>
-</div>
+    <div class="like-row">
+      {% if session.get("username") %}
+        <form method="post" action="{{ url_for('main.like_article', article_id=article.id) }}">
+          <button type="submit"
+                  class="like-btn {% if current_user and article.is_liked_by(current_user) %}liked{% endif %}"
+                  title="Lajk">
+            ♥
+          </button>
+        </form>
+      {% else %}
+        <span class="like-btn disabled" title="Přihlas se pro lajkování">♥</span>
+      {% endif %}
+
+      <a class="like-count" href="{{ url_for('main.article_likes', article_id=article.id) }}">
+        {{ article.like_count() }} lajků
+      </a>
+    </div>
 
 
   </article>
 
+  <hr>
+
+  <section class="comments">
+    <h3>Komentáře ({{ comments|length }})</h3>
+
+    {% if session.get("username") %}
+      <form method="post" action="{{ url_for('main.add_comment', article_id=article.id) }}">
+        <textarea name="content" rows="3" maxlength="2000" placeholder="Napiš komentář..." required></textarea>
+        <button type="submit">Odeslat</button>
+      </form>
+    {% else %}
+      <p>Pro přidání komentáře se musíš <a href="{{ url_for('auth.login') }}">přihlásit</a>.</p>
+    {% endif %}
+
+    {% if comments and comments|length > 0 %}
+      {% for c in comments %}
+        <div class="comment" id="comment-{{ c.id }}">
+          <div class="comment-meta">
+            <a href="{{ url_for('main.public_profile', username=c.user.username) }}">
+              {{ c.user.display_name or c.user.username }}
+            </a>
+            <span class="meta-sep">•</span>
+            <span>{{ c.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+          </div>
+
+          <div class="comment-content">
+            {{ c.content }}
+          </div>
+
+          <div class="like-row comment-like-row">
+            {% if session.get("username") %}
+              <form method="post" action="{{ url_for('main.like_comment', comment_id=c.id) }}">
+                <button type="submit"
+                        class="like-btn {% if current_user and c.is_liked_by(current_user) %}liked{% endif %}"
+                        title="Lajk komentáře">
+                  ♥
+                </button>
+              </form>
+            {% else %}
+              <span class="like-btn disabled" title="Přihlas se pro lajkování">♥</span>
+            {% endif %}
+
+            <span class="like-count">{{ c.like_count() }} lajků</span>
+          </div>
+                      <!-- FORMULÁŘ ODPOVĚDI -->
+          {% if session.get("username") %}
+            {% if session.get("username") %}
+  <button class="reply-toggle-btn"
+          type="button"
+          onclick="toggleReplyForm({{ c.id }})">
+    Odpovědět
+  </button>
+
+  <form class="reply-form"
+        id="reply-form-{{ c.id }}"
+        method="post"
+        action="{{ url_for('main.add_reply', comment_id=c.id) }}"
+        style="display: none;">
+
+    <textarea name="content"
+              rows="2"
+              maxlength="2000"
+              placeholder="Napiš odpověď..."
+              required></textarea>
+
+    <button type="submit">Odeslat odpověď</button>
+  </form>
+{% else %}
+  <p class="reply-hint">
+    Pro odpověď se musíš <a href="{{ url_for('auth.login') }}">přihlásit</a>.
+  </p>
+{% endif %}
+
+          {% else %}
+            <p class="reply-hint">
+              Pro odpověď se musíš <a href="{{ url_for('auth.login') }}">přihlásit</a>.
+            </p>
+          {% endif %}
+
+          <!-- ODPOVĚDI POD KOMENTÁŘEM -->
+          {% if c.replies and c.replies|length > 0 %}
+            <div class="replies">
+              {% for r in c.replies %}
+                <div class="reply" id="reply-{{ r.id }}">
+                  <div class="reply-meta">
+                    <a href="{{ url_for('main.public_profile', username=r.user.username) }}">
+                      {{ r.user.display_name or r.user.username }}
+                    </a>
+
+                    <span class="meta-sep">•</span>
+
+                    <span class="replying-to">
+                      odpověď na
+                      <a href="{{ url_for('main.public_profile', username=c.user.username) }}">
+                        {{ c.user.display_name or c.user.username }}
+                      </a>
+                    </span>
+
+                    <span class="meta-sep">•</span>
+
+                    <span>{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                  </div>
+
+                  <div class="reply-content">{{ r.content }}</div>
+
+                  <div class="like-row reply-like-row">
+                    {% if session.get("username") %}
+                      <form method="post" action="{{ url_for('main.like_reply', reply_id=r.id) }}">
+                        <button type="submit"
+                                class="like-btn {% if current_user and r.is_liked_by(current_user) %}liked{% endif %}"
+                                title="Lajk odpovědi">
+                          ♥
+                        </button>
+                      </form>
+                    {% else %}
+                      <span class="like-btn disabled" title="Přihlas se pro lajkování">♥</span>
+                    {% endif %}
+
+                    <span class="like-count">{{ r.like_count() }} lajků</span>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>Zatím žádné komentáře.</p>
+    {% endif %}
+
+  </section>
+
 </div>
+<script>
+  function toggleReplyForm(commentId) {
+    const form = document.getElementById(`reply-form-${commentId}`);
+    if (!form) return;
+
+    form.style.display = (form.style.display === "none") ? "block" : "none";
+  }
+</script>
+
 {% endblock %}

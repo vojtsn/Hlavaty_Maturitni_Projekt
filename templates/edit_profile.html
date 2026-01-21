@@ -14,7 +14,9 @@
   <textarea name="bio">{{ user.bio or '' }}</textarea>
 
   <label>Datum narození</label>
-  <input type="date" name="birth_date" value="{{ user.birth_date }}">
+  <input type="date"
+       name="birth_date"
+       value="{{ user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '' }}">
 
   <label>Pohlaví</label>
   <select name="gender">
@@ -22,13 +24,6 @@
     <option value="muž" {% if user.gender=='muž' %}selected{% endif %}>Muž</option>
     <option value="žena" {% if user.gender=='žena' %}selected{% endif %}>Žena</option>
   </select>
-
-    <label>Téma</label><br>
-    <select name="theme">
-    <option value="light" {% if user.theme == 'light' %}selected{% endif %}>Light</option>
-    <option value="dark" {% if user.theme == 'dark' %}selected{% endif %}>Dark</option>
-    </select>
-    <br><br>
 
   <button type="submit">Uložit</button>
 </form>

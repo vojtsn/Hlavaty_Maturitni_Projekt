@@ -3,58 +3,85 @@
 {% block title %}InfoBox – Domů{% endblock %}
 
 {% block content %}
+{% if current_user %}
+  <div class="followed-section">
+    <h2 class="page-title">Sledovaní uživatelé</h2>
+
+    {% if followed_users and followed_users|length > 0 %}
+      <div class="followed-grid">
+        {% for u in followed_users %}
+          <a class="followed-card" href="{{ url_for('main.public_profile', username=u.username) }}">
+            <img class="followed-avatar"
+                 src="{{ url_for('static', filename='profilovky/' + (u.avatar or 'default.png')) }}"
+                 alt="avatar">
+            <div class="followed-name">{{ u.display_name or u.username }}</div>
+            <div class="followed-username">@{{ u.username }}</div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">Zatím nikoho nesleduješ.</p>
+    {% endif %}
+  </div>
+{% endif %}
+
 <div class="container">
   <h2 class="page-title">Nejnovější články</h2>
 
   {% if articles and articles|length > 0 %}
     <div class="articles">
       {% for a in articles %}
-        <article class="article-card">
-          <h3 class="article-title">
-            <a href="{{ url_for('main.clanek_detail', article_id=a.id) }}">
-                {{ a.title }}
-            </a>
+  <article class="article-card">
 
-          </h3>
+    {# neviditelný overlay link přes celou kartu #}
+    <a class="article-card-link"
+       href="{{ url_for('main.clanek_detail', article_id=a.id) }}"
+       aria-label="Otevřít článek: {{ a.title }}"></a>
 
+    <h3 class="article-title">
+      <a class="title-link"
+         href="{{ url_for('main.clanek_detail', article_id=a.id) }}">
+        {{ a.title }}
+      </a>
+    </h3>
 
-          <div class="article-meta">
-            <span class="meta-item">
-              {{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}
-            </span>
-            <span class="meta-sep">•</span>
-            <span class="meta-item">
-              autor: {{ a.author.username if a.author else ('id ' ~ a.author_id) }}
-            </span>
-          </div>
+    <div class="article-meta">
+      <span class="meta-item">
+        {{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}
+      </span>
+      <span class="meta-sep">•</span>
+      <span class="meta-item">
+        autor: {{ a.author.username if a.author else ('id ' ~ a.author_id) }}
+      </span>
+    </div>
 
-          {% if a.perex %}
-            <p class="article-perex">{{ a.perex }}</p>
-          {% endif %}
-            <div class="like-row">
-  {% if session.get("username") %}
-    <form method="post"
-          action="{{ url_for('main.like_article', article_id=a.id) }}">
-      <button type="submit"
-              class="like-btn"
-              title="Lajk">
-        ♥
-      </button>
-    </form>
-  {% else %}
-    <span class="like-btn disabled" title="Přihlas se pro lajkování">
-      ♥
-    </span>
-  {% endif %}
+    {% if a.perex %}
+      <p class="article-perex">{{ a.perex|safe }}</p>
+    {% endif %}
 
-  <a class="like-count"
-     href="{{ url_for('main.article_likes', article_id=a.id) }}">
-    {{ a.like_count() }} lajků
-  </a>
-</div>
+    <div class="like-row">
+      {% if session.get("username") %}
+        <form method="post"
+              action="{{ url_for('main.like_article', article_id=a.id) }}">
+          <button type="submit"
+                  class="like-btn {% if current_user and a.is_liked_by(current_user) %}liked{% endif %}"
+                  title="Lajk">
+            ♥
+          </button>
+        </form>
+      {% else %}
+        <span class="like-btn disabled" title="Přihlas se pro lajkování">♥</span>
+      {% endif %}
 
-        </article>
-      {% endfor %}
+      <a class="like-count like-count-link"
+         href="{{ url_for('main.article_likes', article_id=a.id) }}">
+        {{ a.like_count() }} lajků
+      </a>
+    </div>
+
+  </article>
+{% endfor %}
+
     </div>
   {% else %}
     <p class="empty">Zatím tu nejsou žádné články.</p>

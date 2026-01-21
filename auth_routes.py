@@ -17,7 +17,6 @@ def login():
         if user and user.check_password(password):
             session['username'] = user.username
             session['role'] = user.role
-            session['theme'] = user.theme or 'light'
 
             if user.force_password_change:
                 return redirect(url_for('auth.change_password'))

@@ -17,6 +17,21 @@
 
     <!-- INFO -->
     <div class="profile-info">
+        <p>
+          <strong>
+            <a href="#" onclick="openOverlay('following'); return false;">
+              Sleduje: {{ user.following_count() }}
+            </a>
+          </strong>
+          <span class="meta-sep">•</span>
+          <strong>
+            <a href="#" onclick="openOverlay('followers'); return false;">
+              Sledující: {{ user.followers_count() }}
+            </a>
+          </strong>
+        </p>
+
+
 
       {% if user.bio %}
         <p class="profile-bio">{{ user.bio }}</p>
@@ -57,9 +72,135 @@
         </form>
       </div>
 
+
+    </div>
+
+
+  </div>
+  <!-- KOMENTÁŘE UŽIVATELE -->
+    <div class="profile-activity-grid">
+  <div class="profile-card comments-card">
+    <h2 class="comments-title">Moje komentáře</h2>
+
+    {% if comments and comments|length > 0 %}
+      <div class="comments-list">
+        {% for c in comments %}
+          <div class="comment-item">
+            <div class="comment-meta">
+              <a class="comment-article"
+                 href="{{ url_for('main.clanek_detail', article_id=c.article.id) }}">
+                {{ c.article.title }}
+              </a>
+              <span class="comment-dot">•</span>
+              <span class="comment-time">{{ c.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+
+            <div class="comment-content">{{ c.content }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="profile-bio empty">Zatím jsi nenapsal žádné komentáře.</p>
+    {% endif %}
+  </div>
+    <!-- ODPOVĚDI UŽIVATELE -->
+<div class="profile-card comments-card">
+  <h2 class="comments-title">Moje odpovědi</h2>
+
+  {% if replies and replies|length > 0 %}
+    <div class="comments-list">
+      {% for r in replies %}
+        <div class="comment-item">
+          <div class="comment-meta">
+            Odpověď na komentář uživatele
+            <strong>
+              {{ r.comment.user.display_name or r.comment.user.username }}
+            </strong>
+            pod článkem
+            <a class="comment-article"
+               href="{{ url_for('main.clanek_detail', article_id=r.comment.article_id) }}#comment-{{ r.comment.id }}">
+              {{ r.comment.article.title }}
+            </a>
+            <span class="comment-dot">•</span>
+            <span class="comment-time">
+              {{ r.created_at.strftime('%d.%m.%Y %H:%M') }}
+            </span>
+          </div>
+
+          <div class="comment-content">
+            {{ r.content }}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="profile-bio empty">Zatím jsi nenapsal žádné odpovědi.</p>
+  {% endif %}
+</div>
+</div>
+</div>
+<div id="overlay" class="overlay" onclick="closeOverlay(event)">
+  <div class="overlay-card">
+
+    <button class="overlay-close" onclick="closeOverlay()">✕</button>
+
+    <!-- FOLLOWING -->
+    <div id="overlay-following" class="overlay-content">
+      <h2>Sleduje</h2>
+      {% if following %}
+        {% for u in following %}
+          <a class="overlay-user"
+             href="{{ url_for('main.public_profile', username=u.username) }}">
+            <img src="{{ url_for('static', filename='profilovky/' + (u.avatar or 'default.png')) }}">
+            <div>
+              <div class="name">{{ u.display_name or u.username }}</div>
+              <div class="username">@{{ u.username }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="empty">Zatím nikoho nesleduje.</p>
+      {% endif %}
+    </div>
+
+    <!-- FOLLOWERS -->
+    <div id="overlay-followers" class="overlay-content">
+      <h2>Sledující</h2>
+      {% if followers %}
+        {% for u in followers %}
+          <a class="overlay-user"
+             href="{{ url_for('main.public_profile', username=u.username) }}">
+            <img src="{{ url_for('static', filename='profilovky/' + (u.avatar or 'default.png')) }}">
+            <div>
+              <div class="name">{{ u.display_name or u.username }}</div>
+              <div class="username">@{{ u.username }}</div>
+            </div>
+          </a>
+        {% endfor %}
+      {% else %}
+        <p class="empty">Zatím žádní sledující.</p>
+      {% endif %}
     </div>
 
   </div>
-
 </div>
+<script>
+function openOverlay(type){
+  document.getElementById("overlay").style.display = "flex";
+  document.getElementById("overlay-following").style.display = "none";
+  document.getElementById("overlay-followers").style.display = "none";
+  document.getElementById("overlay-" + type).style.display = "block";
+}
+
+function closeOverlay(e){
+  if (!e || e.target.id === "overlay") {
+    document.getElementById("overlay").style.display = "none";
+  }
+}
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeOverlay();
+});
+</script>
 {% endblock %}
+

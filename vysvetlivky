@@ -16,3 +16,22 @@ Uživatel si může nastavit PFP, bio, pohlaví, datum narození
 Rozdělení profilů na veřejnou část a uživatelskou část
 Light mode a Dark mode (bolely mě z toho oči) - později bude dotažené do konce
 Funkce lajkování článků - ukládá se do tabulky, lajkovat mohou pouze přihlášení uživatelé
+
+21. 1. 2026:
+Přihlášení uživatelé nově mohou lajkovat příspěvky.
+Přihlášení uživatelé mohou přidávat komentáře
+Na komentáře se dá odpovídat/reagovat
+Přihlášený uživatel může sledovat ostatní uživatele, dát jim follow.
+Počet sledujících a počet sledovaných je vidět veřejně na profilu uživatele.
+Sledovaní uživatelé se danému uživateli zobrazují nahoře na domovské stránce.
+Editorská aplikace umožňuje stylistické úpravy jako tučné písmo, kurzívu apod.
+Edit. aplikace také dovoluje přidávat obrázky a odkazy do článků
+V aplikaci také lze články smazat/upravit
+Do aplikace se lze přihlásit pouze pod účtem s rolí admina/editora(redaktora)
+Databáze ukládá:
+    Uživatele - username, heslo, email, pohlaví, datum narození, roli, zobrazované jméno, pfp, možnost změny hesla, vydané dočasné heslo, theme
+    Api tokeny
+    Komentáře
+    Odpovědi na komentáře
+    Lajky příspěvků
+    Sledování uživatelů
