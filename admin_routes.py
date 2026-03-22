@@ -2,7 +2,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.security import check_password_hash
 from functools import wraps
 
-from models import db, User
+import re
+from models import db, User, Category
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -79,3 +80,79 @@ def reset_password(user_id):
         username=target.username,
         temp=temp_password
     )
+
+
+# ───────────────
+# CATEGORIES
+# ───────────────
+def slugify(text: str) -> str:
+    """Převede název kategorie na URL-friendly slug."""
+    import unicodedata
+    # odstraní diakritiku (á→a, č→c, ž→z atd.)
+    text = unicodedata.normalize('NFKD', text)
+    text = text.encode('ascii', 'ignore').decode('ascii')
+    text = text.lower().strip()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_-]+', '-', text)
+    text = re.sub(r'^-+|-+$', '', text)
+    return text
+
+
+@admin_bp.route("/categories")
+@admin_login_required
+def categories():
+    cats = Category.query.order_by(Category.name.asc()).all()
+    return render_template("admin/categories.html", categories=cats)
+
+
+@admin_bp.route("/categories/create", methods=["POST"])
+@admin_login_required
+def create_category():
+    name = (request.form.get("name") or "").strip()
+    description = (request.form.get("description") or "").strip()
+
+    if not name:
+        return redirect(url_for("admin.categories"))
+
+    slug = slugify(name)
+
+    # Ošetření duplicit
+    if Category.query.filter_by(slug=slug).first():
+        return redirect(url_for("admin.categories"))
+
+    db.session.add(Category(name=name, slug=slug, description=description or None))
+    db.session.commit()
+    return redirect(url_for("admin.categories"))
+
+
+@admin_bp.route("/categories/delete/<int:cat_id>", methods=["POST"])
+@admin_login_required
+def delete_category(cat_id):
+    cat = Category.query.get_or_404(cat_id)
+    db.session.delete(cat)
+    db.session.commit()
+    return redirect(url_for("admin.categories"))
+
+
+# ───────────────
+# CHANGE ROLE
+# ───────────────
+ALLOWED_ROLES = {'user', 'editor', 'moderator', 'admin'}
+
+@admin_bp.route("/change-role/<int:user_id>", methods=["POST"])
+@admin_login_required
+def change_role(user_id):
+    target = User.query.get_or_404(user_id)
+
+    # nelze měnit vlastní roli
+    if target.username == session.get("admin_username"):
+        return redirect(url_for("admin.users"))
+
+    new_role = request.form.get("role", "").strip()
+    if new_role not in ALLOWED_ROLES:
+        return redirect(url_for("admin.users"))
+
+    target.role = new_role
+    db.session.commit()
+
+    return redirect(url_for("admin.users"))

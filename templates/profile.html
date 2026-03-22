@@ -11,7 +11,7 @@
     <!-- AVATAR -->
     <div class="profile-avatar">
       <img class="avatar"
-           src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default.png')) }}"
+           src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default_pfp.png')) }}"
            alt="Profilový obrázek">
     </div>
 
@@ -51,24 +51,19 @@
 
       <!-- AKCE -->
       <div class="profile-actions">
-        <a class="btn btn-secondary"
-           href="{{ url_for('main.edit_profile') }}">
-          Upravit profil
+        <a class="profile-btn profile-btn-secondary" href="{{ url_for('main.edit_profile') }}">
+          ✎ Upravit profil
         </a>
 
         <form method="post"
               action="{{ url_for('main.upload_avatar') }}"
               enctype="multipart/form-data"
               class="avatar-form">
-
-          <label class="file-label">
-            Vybrat nový obrázek
-            <input type="file" name="avatar" accept="image/*" hidden>
+          <label class="profile-btn profile-btn-primary">
+            ⬆ Změnit fotku
+            <input type="file" name="avatar" accept="image/*" hidden
+                   onchange="this.closest('form').submit()">
           </label>
-
-          <button type="submit" class="btn btn-primary">
-            Změnit profilový obrázek
-          </button>
         </form>
       </div>
 
@@ -202,5 +197,25 @@ document.addEventListener("keydown", e => {
   if (e.key === "Escape") closeOverlay();
 });
 </script>
-{% endblock %}
 
+<div class="profile-section" style="margin-top: 24px;">
+  <h3 class="section-title" style="margin-bottom: 14px;">Oblíbené kategorie</h3>
+  <p style="font-size: 0.9rem; color: #666; margin-bottom: 14px;">
+    Články z těchto kategorií se ti budou zobrazovat prioritně na homepage v sekci „Pro tebe" (max. 30 dní zpět).
+  </p>
+  <form method="POST" action="{{ url_for('main.save_favorite_categories') }}">
+    <div class="fav-cats-grid">
+      {% for cat in categories %}
+        <label class="fav-cat-label">
+          <input type="checkbox" name="category_ids" value="{{ cat.id }}"
+            {% if cat.id in (user.favorite_categories | map(attribute='category_id') | list) %}checked{% endif %}>
+          <span class="fav-cat-name">{{ cat.name }}</span>
+          <span class="fav-cat-count">{{ cat.article_count() }}</span>
+        </label>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn-save-fav" style="margin-top: 14px;">Uložit oblíbené</button>
+  </form>
+</div>
+
+{% endblock %}

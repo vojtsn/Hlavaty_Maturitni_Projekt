@@ -4,111 +4,162 @@
 {% block content %}
 <div class="container profile">
 
-  <h1 class="profile-name">{{ user.display_name or user.username }}</h1>
+  <!-- ── Hlavička profilu ── -->
+  <div class="profile-card pub-profile-header">
 
-  <div class="profile-card">
     <div class="profile-avatar">
       <img class="avatar"
-     src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default.png')) }}"
-     alt="Profilový obrázek">
-
-
+           src="{{ url_for('static', filename='profilovky/' + (user.avatar or 'default_pfp.png')) }}"
+           alt="Profilový obrázek">
     </div>
+
+    {% if user.role == 'admin' %}
+      <span class="role-badge role-badge-admin">ADMINISTRÁTOR</span>
+    {% elif user.role == 'editor' %}
+      <span class="role-badge role-badge-editor">EDITOR</span>
+    {% elif user.role == 'moderator' %}
+      <span class="role-badge role-badge-moderator">MODERÁTOR</span>
+    {% else %}
+      <span class="role-badge role-badge-user">UŽIVATEL</span>
+    {% endif %}
 
     <div class="profile-info">
-      {% if user.bio %}
-        <p class="profile-bio">{{ user.bio }}</p>
-      {% else %}
-        <p class="profile-bio empty">Uživatel zatím nemá bio.</p>
-      {% endif %}
+      <h1 class="profile-name">{{ user.display_name or user.username }}</h1>
+      <p class="profile-bio">{{ user.bio if user.bio else 'Uživatel zatím nemá bio.' }}</p>
 
-      {% if user.birth_date %}
-        <p><strong>Datum narození:</strong> {{ user.birth_date.strftime('%d.%m.%Y') }}</p>
-      {% endif %}
-
-      {% if user.gender %}
-        <p><strong>Pohlaví:</strong> {{ user.gender }}</p>
-      {% endif %}
-        <p>
-          <strong>Sleduje:</strong> {{ user.following_count() }}
-          <span class="meta-sep">•</span>
-          <strong>Sledující:</strong> {{ user.followers_count() }}
-        </p>
-
-        {% if session.get("username") and (session.get("username") != user.username) %}
-          <form method="post" action="{{ url_for('main.toggle_follow', username=user.username) }}">
-            <button type="submit" class="btn btn-primary">
-              {% if current_user and current_user.is_following(user) %}
-                Přestat sledovat
-              {% else %}
-                Sledovat
-              {% endif %}
-            </button>
-          </form>
+      <div class="pub-profile-stats">
+        {% if article_count %}
+          <div class="pub-stat">
+            <strong>{{ article_count }}</strong>
+            <span>článků</span>
+          </div>
         {% endif %}
+        <div class="pub-stat">
+          <strong>{{ user.followers_count() }}</strong>
+          <span>sledujících</span>
+        </div>
+        <div class="pub-stat">
+          <strong>{{ user.following_count() }}</strong>
+          <span>sleduje</span>
+        </div>
+        {% if user.birth_date %}
+          <div class="pub-stat">
+            <strong>{{ user.birth_date.strftime('%d.%m.%Y') }}</strong>
+            <span>narozen</span>
+          </div>
+        {% endif %}
+        {% if user.gender %}
+          <div class="pub-stat">
+            <strong>{{ user.gender }}</strong>
+            <span>pohlaví</span>
+          </div>
+        {% endif %}
+      </div>
 
+      {% if session.get("username") and session.get("username") != user.username %}
+        <form method="post" action="{{ url_for('main.toggle_follow', username=user.username) }}" style="margin-top:12px;">
+          <button type="submit" class="profile-btn {% if current_user and current_user.is_following(user) %}profile-btn-secondary{% else %}profile-btn-primary{% endif %}">
+            {% if current_user and current_user.is_following(user) %}Přestat sledovat{% else %}Sledovat{% endif %}
+          </button>
+        </form>
+      {% endif %}
     </div>
   </div>
-  <!-- KOMENTÁŘE UŽIVATELE -->
 
-    <div class="profile-activity-grid">
-  <div class="profile-card comments-card">
-    <h2 class="comments-title">Komentáře uživatele</h2>
-
-    {% if comments and comments|length > 0 %}
-      <div class="comments-list">
-        {% for c in comments %}
-          <div class="comment-item">
-            <div class="comment-meta">
-              <a class="comment-article"
-                 href="{{ url_for('main.clanek_detail', article_id=c.article.id) }}">
-                {{ c.article.title }}
-              </a>
-
-              <span class="comment-dot">•</span>
-              <span class="comment-time">{{ c.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
-            </div>
-
-
-            <div class="comment-content">{{ c.content }}</div>
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="profile-bio empty">Uživatel zatím nenapsal žádné komentáře.</p>
+  <!-- ── Záložky ── -->
+  <div class="pub-tabs">
+    {% if articles %}
+      <button class="pub-tab active" onclick="showTab('articles', this)">
+        Články <span class="pub-tab-count">{{ articles|length }}</span>
+      </button>
     {% endif %}
+    <button class="pub-tab {% if not articles %}active{% endif %}" onclick="showTab('comments', this)">
+      Komentáře <span class="pub-tab-count">{{ comments|length }}</span>
+    </button>
+    <button class="pub-tab" onclick="showTab('replies', this)">
+      Odpovědi <span class="pub-tab-count">{{ replies|length }}</span>
+    </button>
   </div>
-    <!-- ODPOVĚDI UŽIVATELE -->
-<div class="profile-card comments-card">
-  <h2 class="comments-title">Odpovědi uživatele</h2>
 
-  {% if replies and replies|length > 0 %}
-    <div class="comments-list">
-      {% for r in replies %}
-        <div class="comment-item">
-          <div class="comment-meta">
-            Odpověď na komentář uživatele
-            <strong>{{ r.comment.user.display_name or r.comment.user.username }}</strong>
-            pod článkem
-            <a class="comment-article"
-               href="{{ url_for('main.clanek_detail', article_id=r.comment.article_id) }}#comment-{{ r.comment.id }}">
-              {{ r.comment.article.title }}
-            </a>
-            <span class="comment-dot">•</span>
-            <span class="comment-time">{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+  <!-- ── Obsah záložek ── -->
+
+  {% if articles %}
+  <div id="tab-articles" class="pub-tab-content">
+    <div class="profile-card">
+      {% for a in articles %}
+        <div class="pub-article-item">
+          <a class="pub-article-title" href="{{ url_for('main.clanek_detail', article_id=a.id) }}">
+            {{ a.title }}
+          </a>
+          <div class="article-meta" style="margin-top:4px;">
+            {% for cat in a.categories %}
+              <span class="cat-pill" style="background:#e8f0fb; color:#0c447c;">{{ cat.name }}</span>
+            {% endfor %}
+            <span class="meta-item">{{ a.created_at.strftime('%d.%m.%Y') }}</span>
+            <span class="meta-sep">•</span>
+            <span class="meta-item">♥ {{ a.like_count() }}</span>
           </div>
-
-          <div class="comment-content">{{ r.content }}</div>
+          {% if a.perex %}
+            <p class="pub-article-perex">{{ a.perex | striptags | truncate(140) }}</p>
+          {% endif %}
         </div>
       {% endfor %}
     </div>
-  {% else %}
-    <p class="profile-bio empty">Uživatel zatím nenapsal žádné odpovědi.</p>
+  </div>
   {% endif %}
+
+  <div id="tab-comments" class="pub-tab-content" {% if articles %}style="display:none"{% endif %}>
+    <div class="profile-card">
+      {% if comments %}
+        {% for c in comments %}
+          <div class="comment-item">
+            <div class="comment-meta">
+              <a class="comment-article" href="{{ url_for('main.clanek_detail', article_id=c.article.id) }}">
+                {{ c.article.title }}
+              </a>
+              <span class="comment-dot">•</span>
+              <span class="comment-time">{{ c.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <div class="comment-content">{{ c.content }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="profile-bio empty">Uživatel zatím nenapsal žádné komentáře.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div id="tab-replies" class="pub-tab-content" style="display:none">
+    <div class="profile-card">
+      {% if replies %}
+        {% for r in replies %}
+          <div class="comment-item">
+            <div class="comment-meta">
+              Odpověď pod článkem
+              <a class="comment-article"
+                 href="{{ url_for('main.clanek_detail', article_id=r.comment.article_id) }}#comment-{{ r.comment.id }}">
+                {{ r.comment.article.title }}
+              </a>
+              <span class="comment-dot">•</span>
+              <span class="comment-time">{{ r.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+            </div>
+            <div class="comment-content">{{ r.content }}</div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="profile-bio empty">Uživatel zatím nenapsal žádné odpovědi.</p>
+      {% endif %}
+    </div>
+  </div>
+
 </div>
-        </div>
 
-
-
-</div>
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.pub-tab-content').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('.pub-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + name).style.display = 'block';
+  btn.classList.add('active');
+}
+</script>
 {% endblock %}

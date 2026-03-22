@@ -1,3 +1,16 @@
+VYUKA11:
+users
+articles
+api_tokens
+article_likes
+comments
+comment_likes
+comment_replies
+comment_reply_likes
+user_follows
+categories
+article_categories
+
 22. 10. 2025:
 InfoBox - zpravodajský kanál/webová stránka. Uživatel si může vytvořit účet a přihlásit se
 Přihlášení je udělané pomocí sessions, uživatelská data jsou uložena v databázi
@@ -14,7 +27,6 @@ Vytvořeny tabulky articles a api_tokens
 Reset hesla - přes extra admin aplikaci na jinym portu
 Uživatel si může nastavit PFP, bio, pohlaví, datum narození
 Rozdělení profilů na veřejnou část a uživatelskou část
-Light mode a Dark mode (bolely mě z toho oči) - později bude dotažené do konce
 Funkce lajkování článků - ukládá se do tabulky, lajkovat mohou pouze přihlášení uživatelé
 
 21. 1. 2026:
@@ -35,3 +47,17 @@ Databáze ukládá:
     Odpovědi na komentáře
     Lajky příspěvků
     Sledování uživatelů
+
+22. 3. 2026:
+Přidána funkce kategorií - každý článek může mít přiřazený N počet kategorií, v každé kategorii může být M počet článků
+Uživatel si v nastavení profilu může zakliknout libovolný počet oblíbených kategorií
+Články z oblíbených kategorií se uživateli zobrazují na domovské stránce přednostně, ale pouze pokud jsou novější jak 30 dnů.
+Autor komentáře + admin mohou mazat komentáře
+Přidaný Search bar - vyhledávání je caps insensitive
+Admin může skrz adminovskou stránku měnit role uživatelů (kromě své role)
+Uživatel si nemůže nastavit datum narození takové, které ještě nebylo
+Použití Markdown language
+Testování: 18 testů
+V public profilu jsou komentáře a příspěvky odděleny do samostatných záložek
+Přehlednější info v public profile + je vidět role uživatele
+Upravena editor aplikace, aby byla víc přívětivá = lze se přesouvat šipkami v textu, je vidět aktuální pozice kurzoru a jde používat copy/paste

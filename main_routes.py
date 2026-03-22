@@ -6,8 +6,9 @@ from flask import (
     redirect, url_for, request, current_app, jsonify
 )
 from werkzeug.utils import secure_filename
+from auth_routes import require_password_change_check
 
-from models import db, User, Article, ArticleLike, Comment, CommentLike, CommentReplyLike, CommentReply, UserFollow
+from models import db, User, Article, ArticleLike, Comment, CommentLike, CommentReplyLike, CommentReply, UserFollow, Category, UserFavoriteCategory
 
 main_bp = Blueprint("main", __name__)
 
@@ -22,13 +23,18 @@ def allowed_article_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_ARTICLE_EXT
 
 @main_bp.route('/')
+@require_password_change_check
 def index():
     articles = Article.query.order_by(Article.created_at.desc()).all()
+    categories = Category.query.order_by(Category.name.asc()).all()
 
     username = session.get("username")
     user = User.query.filter_by(username=username).first() if username else None
 
     followed_users = []
+    personal_articles = []
+    fav_category_ids = set()
+
     if user:
         followed_users = (User.query
                           .join(UserFollow, User.id == UserFollow.followed_id)
@@ -37,15 +43,34 @@ def index():
                           .limit(5)
                           .all())
 
+        fav_cats = UserFavoriteCategory.query.filter_by(user_id=user.id).all()
+        fav_category_ids = {fc.category_id for fc in fav_cats}
+
+        if fav_category_ids:
+            from datetime import timedelta
+            cutoff = datetime.utcnow() - timedelta(days=30)
+            personal_articles = (Article.query
+                                 .join(Article.categories)
+                                 .filter(Category.id.in_(fav_category_ids))
+                                 .filter(Article.created_at >= cutoff)
+                                 .order_by(Article.created_at.desc())
+                                 .distinct()
+                                 .limit(10)
+                                 .all())
+
     return render_template(
         "index.html",
         articles=articles,
+        categories=categories,
         current_user=user,
         username=username,
-        followed_users=followed_users
+        followed_users=followed_users,
+        personal_articles=personal_articles,
+        fav_category_ids=fav_category_ids,
     )
 
 @main_bp.route('/profile')
+@require_password_change_check
 def profile():
     if 'username' not in session:
         return redirect(url_for('auth.login'))
@@ -87,11 +112,13 @@ def profile():
         comments=comments,
         replies=replies,
         following=following,
-        followers=followers
+        followers=followers,
+        categories=Category.query.order_by(Category.name.asc()).all()
     )
 
 
 @main_bp.route('/editor')
+@require_password_change_check
 def editor_info():
     if session.get('role') not in ('admin', 'editor', 'moderator'):
         return redirect(url_for('main.index'))
@@ -101,6 +128,10 @@ def editor_info():
 @main_bp.route('/clanek/<int:article_id>')
 def clanek_detail(article_id):
     article = Article.query.get_or_404(article_id)
+
+    # +1 zhlédnutí
+    article.views = (article.views or 0) + 1
+    db.session.commit()
 
     comments = (Comment.query
                 .filter_by(article_id=article.id)
@@ -120,6 +151,7 @@ def clanek_detail(article_id):
 
 
 @main_bp.route("/edit-profile", methods=["GET", "POST"])
+@require_password_change_check
 def edit_profile():
     username = session.get("username")
     if not username:
@@ -130,11 +162,13 @@ def edit_profile():
         session.clear()
         return redirect(url_for("auth.login"))
 
+    error = None
+
     if request.method == "POST":
+        new_username = (request.form.get("username") or "").strip()
         user.display_name = (request.form.get("display_name") or "").strip() or None
         user.bio = (request.form.get("bio") or "").strip() or None
 
-        # birth_date: čeká input type="date" => YYYY-MM-DD
         bd_raw = (request.form.get("birth_date") or "").strip()
         if bd_raw:
             try:
@@ -144,18 +178,33 @@ def edit_profile():
         else:
             user.birth_date = None
 
-        # gender: text/select
         gender = (request.form.get("gender") or "").strip()
         user.gender = gender or None
 
-        db.session.commit()
-        return redirect(url_for("main.profile"))
+        # změna uživatelského jména
+        username_changed = False
+        if new_username and new_username != user.username:
+            if User.query.filter_by(username=new_username).first():
+                error = "Toto uživatelské jméno je již obsazeno."
+            elif len(new_username) < 3:
+                error = "Uživatelské jméno musí mít alespoň 3 znaky."
+            else:
+                user.username = new_username
+                username_changed = True
 
-    return render_template("edit_profile.html", user=user)
+        if not error:
+            db.session.commit()
+            if username_changed:
+                session.clear()
+                return redirect(url_for("auth.login"))
+            return redirect(url_for("main.profile"))
+
+    return render_template("edit_profile.html", user=user, error=error)
 
 
 
 @main_bp.route('/profile/avatar', methods=['POST'])
+@require_password_change_check
 def upload_avatar():
     if 'username' not in session:
         return redirect(url_for('auth.login'))
@@ -209,6 +258,14 @@ def public_profile(username):
                  .order_by(User.display_name.asc(), User.username.asc())
                  .all())
 
+    # články zobrazíme jen pro editory a adminy
+    articles = []
+    if user.role in ('editor', 'admin', 'moderator'):
+        articles = (Article.query
+                    .filter_by(author_id=user.id)
+                    .order_by(Article.created_at.desc())
+                    .all())
+
     return render_template(
         'public_profile.html',
         user=user,
@@ -216,7 +273,9 @@ def public_profile(username):
         comments=comments,
         replies=replies,
         followers=followers,
-        following=following
+        following=following,
+        articles=articles,
+        article_count=len(articles),
     )
 
 
@@ -383,3 +442,166 @@ def toggle_follow(username):
     db.session.commit()
 
     return redirect(request.referrer or url_for("main.public_profile", username=target.username))
+
+@main_bp.route('/kategorie/<string:slug>')
+def category_detail(slug):
+    """Zobrazí stránku s články dané kategorie."""
+    cat = Category.query.filter_by(slug=slug).first_or_404()
+
+    username = session.get("username")
+    user = User.query.filter_by(username=username).first() if username else None
+
+    articles = (cat.articles
+                .order_by(Article.created_at.desc())
+                .all())
+
+    categories = Category.query.order_by(Category.name.asc()).all()
+
+    return render_template(
+        'category_detail.html',
+        category=cat,
+        articles=articles,
+        categories=categories,
+        current_user=user,
+        username=username
+    )
+
+
+@main_bp.route('/favorite-categories', methods=['POST'])
+def save_favorite_categories():
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    # smazat stávající oblíbené
+    UserFavoriteCategory.query.filter_by(user_id=user.id).delete()
+
+    # uložit nově zaškrtnuté
+    selected_ids = request.form.getlist('category_ids')
+    for cat_id in selected_ids:
+        try:
+            db.session.add(UserFavoriteCategory(user_id=user.id, category_id=int(cat_id)))
+        except Exception:
+            pass
+
+    db.session.commit()
+    return redirect(url_for('main.profile'))
+
+
+@main_bp.route('/comments/<int:comment_id>/delete', methods=['POST'])
+def delete_comment(comment_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    comment = Comment.query.get_or_404(comment_id)
+    article_id = comment.article_id
+
+    # pouze autor, admin nebo moderátor
+    if comment.user_id != user.id and user.role not in ('admin', 'moderator'):
+        return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+    db.session.delete(comment)
+    db.session.commit()
+
+    return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+
+@main_bp.route('/replies/<int:reply_id>/delete', methods=['POST'])
+def delete_reply(reply_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    reply = CommentReply.query.get_or_404(reply_id)
+    article_id = db.session.get(Comment, reply.comment_id).article_id
+
+    if reply.user_id != user.id and user.role not in ('admin', 'moderator'):
+        return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+    db.session.delete(reply)
+    db.session.commit()
+
+    return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+
+@main_bp.route('/search')
+def search():
+    q = (request.args.get('q') or '').strip()
+
+    articles = []
+    users = []
+
+    if q:
+        pattern = f'%{q}%'
+
+        articles = (Article.query
+                    .filter(
+                        db.or_(
+                            Article.title.ilike(pattern),
+                            Article.content.ilike(pattern),
+                            Article.perex.ilike(pattern)
+                        )
+                    )
+                    .order_by(Article.created_at.desc())
+                    .limit(20)
+                    .all())
+
+        users = (User.query
+                 .filter(
+                     db.or_(
+                         User.username.ilike(pattern),
+                         User.display_name.ilike(pattern)
+                     )
+                 )
+                 .order_by(User.username.asc())
+                 .limit(10)
+                 .all())
+
+    username = session.get('username')
+    current_user = User.query.filter_by(username=username).first() if username else None
+
+    return render_template(
+        'search.html',
+        q=q,
+        articles=articles,
+        users=users,
+        current_user=current_user
+    )
+
+
+@main_bp.route('/articles/<int:article_id>/delete', methods=['POST'])
+def delete_article(article_id):
+    username = session.get('username')
+    if not username:
+        return redirect(url_for('auth.login'))
+
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        session.clear()
+        return redirect(url_for('auth.login'))
+
+    # pouze editor, moderátor nebo admin
+    if user.role not in ('admin', 'moderator', 'editor'):
+        return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+    article = Article.query.get_or_404(article_id)
+    db.session.delete(article)
+    db.session.commit()
+
+    return redirect(url_for('main.index'))

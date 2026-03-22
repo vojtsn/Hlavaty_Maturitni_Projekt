@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }} – InfoBox{% endblock %}
+
+{% block content %}
+
+{% if categories %}
+  <div class="categories-bar">
+    <span class="categories-label">Kategorie:</span>
+    {% for cat in categories %}
+      <a class="category-tag {% if cat.id == category.id %}active{% endif %}"
+         href="{{ url_for('main.category_detail', slug=cat.slug) }}">
+        {{ cat.name }}
+        <span class="category-count">{{ cat.article_count() }}</span>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="container">
+  <h2 class="page-title">{{ category.name }}</h2>
+  {% if category.description %}
+    <p class="category-description">{{ category.description }}</p>
+  {% endif %}
+
+  {% if articles %}
+    <div class="articles">
+      {% for a in articles %}
+        <article class="article-card">
+          <a class="article-card-link"
+             href="{{ url_for('main.clanek_detail', article_id=a.id) }}"
+             aria-label="Otevřít článek: {{ a.title }}"></a>
+          <div class="article-card-body">
+            <h3 class="article-title">{{ a.title }}</h3>
+            {% if a.perex %}
+              <p class="article-perex">{{ a.perex | striptags | truncate(160) }}</p>
+            {% endif %}
+            <div class="article-meta">
+              <span>{{ a.author.display_name or a.author.username }}</span>
+              <span>{{ a.created_at.strftime('%d. %m. %Y') }}</span>
+              <span>❤ {{ a.like_count() }}</span>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="empty">V této kategorii zatím nejsou žádné články.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

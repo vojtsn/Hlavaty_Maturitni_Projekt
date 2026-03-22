@@ -7,7 +7,16 @@
 
   <article class="article-detail">
 
-    <h1 class="detail-title">{{ article.title }}</h1>
+    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
+      <h1 class="detail-title">{{ article.title }}</h1>
+      {% if current_user and current_user.role in ('admin', 'moderator', 'editor') %}
+        <form method="post" action="{{ url_for('main.delete_article', article_id=article.id) }}"
+              onsubmit="return confirm('Opravdu chceš smazat tento článek?')"
+              style="flex-shrink:0; margin-top:6px;">
+          <button type="submit" class="delete-btn" title="Smazat článek" style="font-size:1rem; padding:4px 10px;">✕</button>
+        </form>
+      {% endif %}
+    </div>
 
     <div class="article-meta">
       <span>
@@ -20,16 +29,21 @@
           {{ article.author.display_name or article.author.username }}
         </a>
       </span>
+      {% for cat in article.categories %}
+        <span class="meta-sep">•</span>
+        <a class="cat-pill" href="{{ url_for('main.category_detail', slug=cat.slug) }}"
+           style="background:#e8f0fb; color:#0c447c; text-decoration:none;">{{ cat.name }}</a>
+      {% endfor %}
     </div>
 
     {% if article.perex %}
-      <p class="article-perex detail-perex">
-        {{ article.perex | safe }}
-      </p>
+      <div class="article-perex detail-perex">
+        {{ article.perex | markdown | safe }}
+      </div>
     {% endif %}
 
-    <div class="article-content">
-      {{ article.content | safe }}
+    <div class="article-content markdown-body">
+      {{ article.content | markdown | safe }}
     </div>
 
     <div class="like-row">
@@ -96,6 +110,14 @@
             {% endif %}
 
             <span class="like-count">{{ c.like_count() }} lajků</span>
+
+            {% if current_user and (current_user.id == c.user_id or current_user.role in ('admin', 'moderator')) %}
+              <form method="post" action="{{ url_for('main.delete_comment', comment_id=c.id) }}"
+                    onsubmit="return confirm('Smazat komentář?')"
+                    style="margin-left: auto;">
+                <button type="submit" class="delete-btn" title="Smazat komentář">✕</button>
+              </form>
+            {% endif %}
           </div>
                       <!-- FORMULÁŘ ODPOVĚDI -->
           {% if session.get("username") %}
@@ -172,6 +194,14 @@
                     {% endif %}
 
                     <span class="like-count">{{ r.like_count() }} lajků</span>
+
+                    {% if current_user and (current_user.id == r.user_id or current_user.role in ('admin', 'moderator')) %}
+                      <form method="post" action="{{ url_for('main.delete_reply', reply_id=r.id) }}"
+                            onsubmit="return confirm('Smazat odpověď?')"
+                            style="margin-left: auto;">
+                        <button type="submit" class="delete-btn" title="Smazat odpověď">✕</button>
+                      </form>
+                    {% endif %}
                   </div>
                 </div>
               {% endfor %}

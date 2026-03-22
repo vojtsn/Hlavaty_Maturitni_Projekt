@@ -15,6 +15,7 @@
     <th>Email</th>
     <th>Role</th>
     <th>Force</th>
+    <th>Změna role</th>
     <th>Akce</th>
   </tr>
 
@@ -23,12 +24,31 @@
     <td>{{ u.id }}</td>
     <td>{{ u.username }}</td>
     <td>{{ u.email }}</td>
-    <td>{{ u.role }}</td>
+    <td><strong>{{ u.role }}</strong></td>
     <td>{{ "ANO" if u.force_password_change else "NE" }}</td>
+    <td>
+      {% if u.username != session.get("admin_username") %}
+      <form method="post" action="{{ url_for('admin.change_role', user_id=u.id) }}"
+            style="display:flex; gap:6px; align-items:center;"
+            onsubmit="return confirm('Změnit roli uživatele {{ u.username }}?')">
+        <select name="role" style="padding:4px 8px; border-radius:6px; border:1px solid #ccc;">
+          {% for r in ['user', 'editor', 'moderator', 'admin'] %}
+            <option value="{{ r }}" {% if u.role == r %}selected{% endif %}>{{ r }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                style="padding:4px 12px; background:#0077cc; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+          Uložit
+        </button>
+      </form>
+      {% else %}
+        <span style="color:#aaa; font-size:0.85rem;">vlastní účet</span>
+      {% endif %}
+    </td>
     <td>
       <form method="post"
             action="{{ url_for('admin.reset_password', user_id=u.id) }}"
-            onsubmit="return confirm('Resetovat heslo pro {{u.username}}?');">
+            onsubmit="return confirm('Resetovat heslo pro {{ u.username }}?');">
         <button type="submit">Reset hesla</button>
       </form>
     </td>

@@ -9,6 +9,7 @@
 
 <nav style="margin-bottom: 16px;">
   <a href="{{ url_for('admin.users') }}">Uživatelé</a>
+  | <a href="{{ url_for('admin.categories') }}">Kategorie</a>
   {% if session.get("admin_logged_in") %}
     | <a href="{{ url_for('admin.logout') }}">Odhlásit</a>
   {% else %}

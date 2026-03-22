@@ -17,12 +17,31 @@
         <a class="brand" href="{{ url_for('main.index') }}">InfoBox</a>
       </div>
 
+      <div class="nav-center">
+        <form class="search-form" action="{{ url_for('main.search') }}" method="get">
+          <span class="search-icon">⌕</span>
+          <input class="search-input" type="search" name="q" placeholder="Hledat články nebo uživatele..."
+                 value="{{ request.args.get('q', '') }}" autocomplete="off">
+        </form>
+      </div>
+
       <div class="nav-right">
         {% if session.get('username') %}
 
           <div class="user-menu">
             <button class="user-btn" type="button">
-              {{ session.get('username') }} ▾
+              {{ session.get('username') }}
+              {% set role = session.get('role') %}
+              {% if role == 'admin' %}
+                <span class="role-badge role-badge-admin" style="position:static; margin-left:6px;">ADMIN</span>
+              {% elif role == 'editor' %}
+                <span class="role-badge role-badge-editor" style="position:static; margin-left:6px;">EDITOR</span>
+              {% elif role == 'moderator' %}
+                <span class="role-badge role-badge-moderator" style="position:static; margin-left:6px;">MOD</span>
+              {% else %}
+                <span class="role-badge role-badge-user" style="position:static; margin-left:6px;">UŽIVATEL</span>
+              {% endif %}
+              ▾
             </button>
 
             <div class="dropdown">
@@ -44,14 +63,39 @@
     </div>
   </nav>
   {% if session.get('username') and session.get('role') in ['admin', 'editor', 'moderator'] %}
-  <a class="nav-link btn-link" href="{{ url_for('main.editor_info') }}">
+  <a class="nav-link btn-link editor-btn" href="{{ url_for('main.editor_info') }}">
     Přidat článek
   </a>
 {% endif %}
 
-  <main class="page">
-    {% block content %}{% endblock %}
-  </main>
+  <div class="page-wrapper">
+
+    {% if request.endpoint not in ('auth.login', 'auth.register') %}
+    <aside class="left-panel">
+      {% if session.get('username') and session.get('role') in ['admin', 'editor', 'moderator'] %}
+        <a class="left-panel-editor-btn" href="{{ url_for('main.editor_info') }}">+ Přidat článek</a>
+      {% endif %}
+
+      <div class="left-panel-card">
+        <div class="left-panel-title">Kategorie</div>
+        <nav class="left-panel-cats">
+          <a class="left-panel-cat" href="{{ url_for('main.index') }}">Všechny články (Domů)</a>
+          {% for cat in categories if categories is defined %}
+            <a class="left-panel-cat" href="{{ url_for('main.category_detail', slug=cat.slug) }}">
+              {{ cat.name }}
+              <span class="left-panel-count">{{ cat.article_count() }}</span>
+            </a>
+          {% endfor %}
+        </nav>
+      </div>
+    </aside>
+    {% endif %}
+
+    <main class="page">
+      {% block content %}{% endblock %}
+    </main>
+
+  </div>
 
 </>
 </html>

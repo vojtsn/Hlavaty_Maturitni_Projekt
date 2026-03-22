@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Hledání: {{ q }} – InfoBox{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  {% if q %}
+    <p class="search-results-header">
+      Výsledky pro <strong>„{{ q }}"</strong>
+      — {{ articles|length }} článků, {{ users|length }} uživatelů
+    </p>
+  {% else %}
+    <p class="search-results-header">Zadej hledaný výraz do vyhledávacího pole.</p>
+  {% endif %}
+
+  {% if q %}
+
+    {# ── Články ── #}
+    <div class="search-section-title">Články</div>
+    {% if articles %}
+      <div class="articles" style="margin-bottom: 28px;">
+        {% for a in articles %}
+          <article class="article-card" style="position: relative;">
+            <a class="article-card-link" href="{{ url_for('main.clanek_detail', article_id=a.id) }}"
+               aria-label="{{ a.title }}"></a>
+            <h3 class="article-title">
+              <a class="title-link" href="{{ url_for('main.clanek_detail', article_id=a.id) }}">
+                {{ a.title | highlight(q) | safe }}
+              </a>
+            </h3>
+            <div class="article-meta">
+              {% for cat in a.categories %}
+                <span class="cat-pill" style="background:#e8f0fb; color:#0c447c;">{{ cat.name }}</span>
+              {% endfor %}
+              <span class="meta-item">{{ a.created_at.strftime('%d.%m.%Y') if a.created_at else '' }}</span>
+              <span class="meta-sep">•</span>
+              <span class="meta-item">{{ a.author.username if a.author else '' }}</span>
+              <span class="meta-sep">•</span>
+              <span class="meta-item">♥ {{ a.like_count() }}</span>
+            </div>
+            {% if a.perex %}
+              <p class="article-perex">{{ a.perex | striptags | highlight(q) | safe }}</p>
+            {% endif %}
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="search-empty">Žádné články neodpovídají hledání.</p>
+    {% endif %}
+
+    {# ── Uživatelé ── #}
+    <div class="search-section-title">Uživatelé</div>
+    {% if users %}
+      <div class="search-users">
+        {% for u in users %}
+          <a class="search-user-card" href="{{ url_for('main.public_profile', username=u.username) }}">
+            <img class="search-user-avatar"
+                 src="{{ url_for('static', filename='profilovky/' + (u.avatar or 'default_pfp.png')) }}"
+                 alt="avatar">
+            <div class="search-user-info">
+              <div class="search-user-name">{{ (u.display_name or u.username) | highlight(q) | safe }}</div>
+              <div class="search-user-username">@{{ u.username | highlight(q) | safe }}</div>
+            </div>
+            {% if u.role == 'admin' %}
+              <span class="role-badge role-badge-admin" style="position:static; margin-left:auto;">ADMINISTRÁTOR</span>
+            {% elif u.role == 'editor' %}
+              <span class="role-badge role-badge-editor" style="position:static; margin-left:auto;">EDITOR</span>
+            {% elif u.role == 'moderator' %}
+              <span class="role-badge role-badge-moderator" style="position:static; margin-left:auto;">MODERÁTOR</span>
+            {% else %}
+              <span class="role-badge role-badge-user" style="position:static; margin-left:auto;">UŽIVATEL</span>
+            {% endif %}
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="search-empty">Žádní uživatelé neodpovídají hledání.</p>
+    {% endif %}
+
+  {% endif %}
+
+</div>
+{% endblock %}

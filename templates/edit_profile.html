@@ -1,32 +1,67 @@
 {% extends "base.html" %}
-{% block title %}Upravit profil{% endblock %}
+{% block title %}Upravit profil – InfoBox{% endblock %}
 
 {% block content %}
 <div class="container">
+<div class="edit-profile-card">
 
-<h1>Upravit profil</h1>
+  <div class="edit-profile-title">Upravit profil</div>
 
-<form method="post">
-  <label>Zobrazované jméno</label>
-  <input type="text" name="display_name" value="{{ user.display_name or '' }}">
+  {% if error %}
+    <div class="edit-profile-error">{{ error }}</div>
+  {% endif %}
 
-  <label>Bio</label>
-  <textarea name="bio">{{ user.bio or '' }}</textarea>
+  <form method="post">
 
-  <label>Datum narození</label>
-  <input type="date"
-       name="birth_date"
-       value="{{ user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '' }}">
+    <div class="edit-section-label">Přihlašovací údaje</div>
 
-  <label>Pohlaví</label>
-  <select name="gender">
-    <option value="">—</option>
-    <option value="muž" {% if user.gender=='muž' %}selected{% endif %}>Muž</option>
-    <option value="žena" {% if user.gender=='žena' %}selected{% endif %}>Žena</option>
-  </select>
+    <div class="edit-field">
+      <label>Uživatelské jméno</label>
+      <input type="text" name="username" value="{{ user.username }}" minlength="3" maxlength="50" required>
+      <span class="edit-hint">Používá se pro přihlášení a v URL profilu.</span>
+      <span class="edit-warning">Změna uživatelského jména tě odhlásí a budeš se muset přihlásit znovu.</span>
+    </div>
 
-  <button type="submit">Uložit</button>
-</form>
+    <div class="edit-divider"></div>
+    <div class="edit-section-label">Veřejný profil</div>
 
+    <div class="edit-field">
+      <label>Zobrazované jméno</label>
+      <input type="text" name="display_name" value="{{ user.display_name or '' }}" maxlength="100"
+             placeholder="Viditelné místo uživatelského jména">
+      <span class="edit-hint">Pokud je vyplněné, zobrazí se místo uživatelského jména.</span>
+    </div>
+
+    <div class="edit-field">
+      <label>Bio</label>
+      <textarea name="bio" maxlength="500" placeholder="Napiš něco o sobě...">{{ user.bio or '' }}</textarea>
+    </div>
+
+    <div class="edit-divider"></div>
+    <div class="edit-section-label">Osobní údaje</div>
+
+    <div class="edit-field">
+      <label>Datum narození</label>
+      <input type="date" name="birth_date"
+             value="{{ user.birth_date.strftime('%Y-%m-%d') if user.birth_date else '' }}"
+             max="{{ now().strftime('%Y-%m-%d') }}">
+    </div>
+
+    <div class="edit-field">
+      <label>Pohlaví</label>
+      <select name="gender">
+        <option value="">—</option>
+        <option value="muž" {% if user.gender == 'muž' %}selected{% endif %}>Muž</option>
+        <option value="žena" {% if user.gender == 'žena' %}selected{% endif %}>Žena</option>
+      </select>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-top:6px;">
+      <button type="submit" class="edit-save-btn">Uložit změny</button>
+      <a href="{{ url_for('main.profile') }}" class="edit-back-btn">Zpět</a>
+    </div>
+
+  </form>
+</div>
 </div>
 {% endblock %}

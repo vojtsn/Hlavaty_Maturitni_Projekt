@@ -1,0 +1,52 @@
+{% extends "admin/base.html" %}
+{% block content %}
+<h2>Správa kategorií</h2>
+
+<form method="POST" action="{{ url_for('admin.create_category') }}" style="margin-bottom:2rem;">
+    <input type="text" name="name" placeholder="Název kategorie" required maxlength="100"
+           style="padding:8px 12px; width:220px; border:1px solid #ccc; border-radius:6px;">
+    <input type="text" name="description" placeholder="Popis (nepovinný)" maxlength="300"
+           style="padding:8px 12px; width:280px; border:1px solid #ccc; border-radius:6px; margin-left:8px;">
+    <button type="submit"
+            style="padding:8px 18px; background:#0077cc; color:#fff; border:none; border-radius:6px; cursor:pointer; margin-left:8px;">
+        Vytvořit
+    </button>
+</form>
+
+{% if categories %}
+<table style="width:100%; border-collapse:collapse;">
+    <thead>
+        <tr style="background:#f0f0f0;">
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">ID</th>
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">Název</th>
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">Slug</th>
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">Popis</th>
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">Článků</th>
+            <th style="padding:10px; text-align:left; border-bottom:2px solid #ddd;">Akce</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cat in categories %}
+        <tr style="border-bottom:1px solid #eee;">
+            <td style="padding:10px;">{{ cat.id }}</td>
+            <td style="padding:10px;"><strong>{{ cat.name }}</strong></td>
+            <td style="padding:10px; color:#888; font-family:monospace;">{{ cat.slug }}</td>
+            <td style="padding:10px;">{{ cat.description or "—" }}</td>
+            <td style="padding:10px;">{{ cat.article_count() }}</td>
+            <td style="padding:10px;">
+                <form method="POST" action="{{ url_for('admin.delete_category', cat_id=cat.id) }}"
+                      onsubmit="return confirm('Smazat kategorii {{ cat.name }}?')">
+                    <button type="submit"
+                            style="padding:5px 12px; background:#cc3333; color:#fff; border:none; border-radius:5px; cursor:pointer;">
+                        Smazat
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#888;">Zatím žádné kategorie.</p>
+{% endif %}
+{% endblock %}

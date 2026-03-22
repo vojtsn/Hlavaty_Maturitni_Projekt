@@ -3,29 +3,54 @@
 {% block title %}InfoBox – Domů{% endblock %}
 
 {% block content %}
-{% if current_user %}
-  <div class="followed-section">
-    <h2 class="page-title">Sledovaní uživatelé</h2>
-
-    {% if followed_users and followed_users|length > 0 %}
-      <div class="followed-grid">
-        {% for u in followed_users %}
-          <a class="followed-card" href="{{ url_for('main.public_profile', username=u.username) }}">
-            <img class="followed-avatar"
-                 src="{{ url_for('static', filename='profilovky/' + (u.avatar or 'default.png')) }}"
-                 alt="avatar">
-            <div class="followed-name">{{ u.display_name or u.username }}</div>
-            <div class="followed-username">@{{ u.username }}</div>
-          </a>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="empty">Zatím nikoho nesleduješ.</p>
-    {% endif %}
-  </div>
-{% endif %}
-
 <div class="container">
+
+  {% if current_user and personal_articles %}
+  <div class="personal-section">
+    <div class="personal-header">
+      <span class="personal-title">Pro tebe</span>
+      <span class="personal-badge">z tvých oblíbených kategorií</span>
+    </div>
+    <div class="articles">
+      {% for a in personal_articles %}
+      <article class="article-card article-card-featured">
+        <a class="article-card-link" href="{{ url_for('main.clanek_detail', article_id=a.id) }}" aria-label="{{ a.title }}"></a>
+        <h3 class="article-title">
+          <a class="title-link" href="{{ url_for('main.clanek_detail', article_id=a.id) }}">{{ a.title }}</a>
+        </h3>
+        <div class="article-meta">
+          {% for cat in a.categories %}
+            <span class="cat-pill" style="background:#e8f0fb; color:#0c447c;">{{ cat.name }}</span>
+          {% endfor %}
+          <span class="meta-item">{{ a.created_at.strftime('%d.%m.%Y %H:%M') if a.created_at else '' }}</span>
+          <span class="meta-sep">•</span>
+          <span class="meta-item">{{ a.author.username if a.author else '' }}</span>
+        </div>
+        {% if a.perex %}
+          <p class="article-perex">{{ a.perex | markdown | safe }}</p>
+        {% endif %}
+        <div class="like-row">
+          {% if session.get("username") %}
+            <form method="post" action="{{ url_for('main.like_article', article_id=a.id) }}">
+              <button type="submit" class="like-btn {% if current_user and a.is_liked_by(current_user) %}liked{% endif %}" title="Lajk">♥</button>
+            </form>
+          {% else %}
+            <span class="like-btn disabled">♥</span>
+          {% endif %}
+          <a class="like-count like-count-link" href="{{ url_for('main.article_likes', article_id=a.id) }}">{{ a.like_count() }} lajků</a>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <span class="section-divider-text">Nejnovější články</span>
+    <div class="section-divider-line"></div>
+  </div>
+  {% endif %}
+
   <h2 class="page-title">Nejnovější články</h2>
 
   {% if articles and articles|length > 0 %}
@@ -53,10 +78,15 @@
       <span class="meta-item">
         autor: {{ a.author.username if a.author else ('id ' ~ a.author_id) }}
       </span>
+      {% for cat in a.categories %}
+        <span class="meta-sep">•</span>
+        <a class="cat-pill" href="{{ url_for('main.category_detail', slug=cat.slug) }}"
+           style="background:#e8f0fb; color:#0c447c; text-decoration:none;">{{ cat.name }}</a>
+      {% endfor %}
     </div>
 
     {% if a.perex %}
-      <p class="article-perex">{{ a.perex|safe }}</p>
+      <p class="article-perex">{{ a.perex | markdown | safe }}</p>
     {% endif %}
 
     <div class="like-row">

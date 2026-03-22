@@ -7,7 +7,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 
-from models import db, User, Article, ApiToken
+from models import db, User, Article, ApiToken, Category
 
 api_bp = Blueprint("api", __name__)
 
@@ -25,7 +25,7 @@ def get_user_from_token(req):
     return t.user if t else None
 
 def require_editor_role(user):
-    return user and user.role in ("admin", "editor", "moderator")
+    return user and user.role in ("admin", "editor")
 
 # ---------------------------
 # HTML sanitization (safe formatting)
@@ -109,6 +109,14 @@ def api_create_article():
 
     a = Article(title=title, perex=perex_clean, content=content_clean, author_id=user.id)
     db.session.add(a)
+    db.session.flush()  # získáme a.id před commitem
+
+    # přiřazení kategorií
+    category_ids = data.get("category_ids") or []
+    if category_ids:
+        cats = Category.query.filter(Category.id.in_(category_ids)).all()
+        a.categories = cats
+
     db.session.commit()
 
     return jsonify({"ok": True, "id": a.id}), 200
@@ -182,7 +190,8 @@ def api_get_article(article_id):
             "perex": a.perex or "",
             "content": a.content or "",
             "author_id": a.author_id,
-            "created_at": a.created_at.isoformat() if a.created_at else None
+            "created_at": a.created_at.isoformat() if a.created_at else None,
+            "category_ids": [c.id for c in a.categories]
         }
     }), 200
 
@@ -212,6 +221,12 @@ def api_update_article(article_id):
     a.title = title
     a.perex = sanitize_html(perex)
     a.content = sanitize_html(content)
+
+    # aktualizace kategorií (pokud jsou v requestu)
+    if "category_ids" in data:
+        cats = Category.query.filter(Category.id.in_(data["category_ids"] or [])).all()
+        a.categories = cats
+
     db.session.commit()
 
     return jsonify({"ok": True, "id": a.id}), 200
@@ -234,3 +249,32 @@ def api_delete_article(article_id):
     db.session.commit()
 
     return jsonify({"ok": True}), 200
+
+
+@api_bp.route("/api/categories", methods=["GET"])
+def api_list_categories():
+    """Vrátí seznam všech kategorií (nevyžaduje token — veřejné)."""
+    cats = Category.query.order_by(Category.name.asc()).all()
+    return jsonify({
+        "ok": True,
+        "categories": [{"id": c.id, "name": c.name, "slug": c.slug} for c in cats]
+    }), 200
+
+
+@api_bp.route("/api/articles/<int:article_id>/stats", methods=["GET"])
+def api_article_stats(article_id):
+    user = get_user_from_token(request)
+    if not user:
+        return jsonify({"ok": False, "error": "Neplatný token."}), 401
+    if not require_editor_role(user):
+        return jsonify({"ok": False, "error": "Nemáš oprávnění."}), 403
+
+    a = Article.query.get_or_404(article_id)
+    return jsonify({
+        "ok": True,
+        "stats": {
+            "views":    a.views or 0,
+            "likes":    a.like_count(),
+            "comments": len(a.comments),
+        }
+    }), 200

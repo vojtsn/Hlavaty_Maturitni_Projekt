@@ -74,6 +74,7 @@ class Article(db.Model):
     title = db.Column(db.String(200), nullable=False)
     perex = db.Column(db.String(500), nullable=True)
     content = db.Column(db.Text, nullable=False)
+    views = db.Column(db.Integer, default=0, nullable=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
@@ -128,6 +129,7 @@ class Comment(db.Model):
 
     article = db.relationship('Article', backref='comments')
     user = db.relationship('User', backref='comments')
+    replies = db.relationship('CommentReply', backref='parent_comment', cascade='all, delete-orphan')
 
     def like_count(self) -> int:
         return db.session.query(func.count(CommentLike.id)) \
@@ -167,7 +169,7 @@ class CommentReply(db.Model):
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
 
-    comment = db.relationship('Comment', backref='replies')
+    comment = db.relationship('Comment', foreign_keys=[comment_id])
     user = db.relationship('User', backref='comment_replies')
 
     def like_count(self) -> int:
@@ -201,6 +203,46 @@ class CommentReplyLike(db.Model):
     __table_args__ = (
         db.UniqueConstraint('reply_id', 'user_id', name='uq_reply_like'),
     )
+
+# Vazební tabulka pro M:N vztah Article <-> Category
+article_categories = db.Table(
+    'article_categories',
+    db.Column('article_id', db.Integer, db.ForeignKey('articles.id', ondelete='CASCADE'), primary_key=True),
+    db.Column('category_id', db.Integer, db.ForeignKey('categories.id', ondelete='CASCADE'), primary_key=True)
+)
+
+
+class Category(db.Model):
+    """Kategorie článků. Vytváří admin, přiřazují editoři/admini."""
+    __tablename__ = 'categories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), unique=True, nullable=False)
+    slug = db.Column(db.String(100), unique=True, nullable=False)  # URL-friendly název, např. "sport"
+    description = db.Column(db.String(300), nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    articles = db.relationship('Article', secondary=article_categories, backref='categories', lazy='dynamic')
+
+    def article_count(self) -> int:
+        return self.articles.count()
+
+
+class UserFavoriteCategory(db.Model):
+    """Oblíbené kategorie uživatele."""
+    __tablename__ = 'user_favorite_categories'
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete='CASCADE'), nullable=False)
+
+    user = db.relationship('User', backref='favorite_categories')
+    category = db.relationship('Category', backref='favorited_by')
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'category_id', name='uq_user_fav_category'),
+    )
+
 
 class UserFollow(db.Model):
     __tablename__ = "user_follows"
