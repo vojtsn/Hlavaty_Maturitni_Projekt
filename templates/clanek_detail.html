@@ -9,12 +9,54 @@
 
     <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px;">
       <h1 class="detail-title">{{ article.title }}</h1>
-      {% if current_user and current_user.role in ('admin', 'moderator', 'editor') %}
-        <form method="post" action="{{ url_for('main.delete_article', article_id=article.id) }}"
-              onsubmit="return confirm('Opravdu chceš smazat tento článek?')"
-              style="flex-shrink:0; margin-top:6px;">
-          <button type="submit" class="delete-btn" title="Smazat článek" style="font-size:1rem; padding:4px 10px;">✕</button>
-        </form>
+      {% if current_user and (
+          current_user.role == 'admin' or
+          (current_user.role == 'moderator' and article.author.role != 'admin') or
+          (current_user.role == 'editor' and article.author_id == current_user.id)
+        ) %}
+        <button type="button" class="delete-btn" title="Smazat článek"
+                style="font-size:1rem; padding:4px 10px;"
+                onclick="document.getElementById('delete-modal').style.display='flex'">✕</button>
+
+        <!-- Modální okno s potvrzením hesla -->
+        <div id="delete-modal" style="display:none; position:fixed; inset:0;
+             background:rgba(0,0,0,.5); z-index:9999;
+             align-items:center; justify-content:center;">
+          <div style="background:white; border-radius:12px; padding:32px 28px;
+                      min-width:320px; box-shadow:0 8px 32px rgba(0,0,0,.2);">
+            <h3 style="margin:0 0 8px;">Smazat článek?</h3>
+            <p style="color:#555; margin:0 0 18px; font-size:14px;">
+              Tato akce je nevratná. Pro potvrzení zadej své heslo.
+            </p>
+            {% if '_anchor' in request.args %}
+              <p style="color:#c00; font-size:13px; margin:0 0 10px;">
+                ✕ Nesprávné heslo, článek nebyl smazán.
+              </p>
+            {% endif %}
+            <form method="post"
+                  action="{{ url_for('main.delete_article', article_id=article.id) }}">
+              <input type="password" name="confirm_password"
+                     placeholder="Tvoje heslo"
+                     required autofocus
+                     style="width:100%; box-sizing:border-box; padding:8px 12px;
+                            border:1.5px solid #ccc; border-radius:7px;
+                            font-size:14px; margin-bottom:14px;">
+              <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button type="button"
+                        onclick="document.getElementById('delete-modal').style.display='none'"
+                        style="padding:7px 18px; border-radius:7px; border:1px solid #ccc;
+                               background:#f5f5f5; cursor:pointer;">
+                  Zrušit
+                </button>
+                <button type="submit"
+                        style="padding:7px 18px; border-radius:7px; border:none;
+                               background:#c83c3c; color:white; cursor:pointer;">
+                  Smazat
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       {% endif %}
     </div>
 
@@ -221,8 +263,13 @@
   function toggleReplyForm(commentId) {
     const form = document.getElementById(`reply-form-${commentId}`);
     if (!form) return;
-
     form.style.display = (form.style.display === "none") ? "block" : "none";
+  }
+
+  // Automaticky otevři modal pokud bylo heslo špatně
+  if (window.location.hash === '#delete-error') {
+    const modal = document.getElementById('delete-modal');
+    if (modal) modal.style.display = 'flex';
   }
 </script>
 

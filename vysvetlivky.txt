@@ -61,3 +61,12 @@ Testování: 18 testů
 V public profilu jsou komentáře a příspěvky odděleny do samostatných záložek
 Přehlednější info v public profile + je vidět role uživatele
 Upravena editor aplikace, aby byla víc přívětivá = lze se přesouvat šipkami v textu, je vidět aktuální pozice kurzoru a jde používat copy/paste
+
+30. 3. 2026:
+Nahrávání článku z .txt souboru
+Úprava práv:
+- Editor může mazat pouze svoje články
+- Moderátor může mazat články editora, ale ne admina
+- V editor_app:
+    - Editor může pracovat pouze se svými články, admin může upravovat všechny
+    - Ve statistikách je nově počet unikátních zobrazení (podle uživatele)

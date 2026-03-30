@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 from flask import (
     Blueprint, render_template, session,
@@ -8,7 +8,7 @@ from flask import (
 from werkzeug.utils import secure_filename
 from auth_routes import require_password_change_check
 
-from models import db, User, Article, ArticleLike, Comment, CommentLike, CommentReplyLike, CommentReply, UserFollow, Category, UserFavoriteCategory
+from models import db, User, Article, ArticleLike, Comment, CommentLike, CommentReplyLike, CommentReply, UserFollow, Category, UserFavoriteCategory, ArticleView
 
 main_bp = Blueprint("main", __name__)
 
@@ -129,17 +129,47 @@ def editor_info():
 def clanek_detail(article_id):
     article = Article.query.get_or_404(article_id)
 
-    # +1 zhlédnutí
+    # Zaznamenej zobrazení — celkové +1 vždy, unikátní jen jednou per den
     article.views = (article.views or 0) + 1
+
+    username = session.get("username")
+    user = User.query.filter_by(username=username).first() if username else None
+    today = date.today()
+
+    if user:
+        # přihlášený — unikátní per (user, den)
+        exists = ArticleView.query.filter_by(
+            article_id=article_id,
+            user_id=user.id,
+            viewed_at=today
+        ).first()
+        if not exists:
+            db.session.add(ArticleView(
+                article_id=article_id,
+                user_id=user.id,
+                viewed_at=today
+            ))
+    else:
+        # anonymní — unikátní per (IP, den)
+        ip = request.remote_addr
+        exists = ArticleView.query.filter_by(
+            article_id=article_id,
+            ip_address=ip,
+            viewed_at=today
+        ).filter(ArticleView.user_id.is_(None)).first()
+        if not exists:
+            db.session.add(ArticleView(
+                article_id=article_id,
+                ip_address=ip,
+                viewed_at=today
+            ))
+
     db.session.commit()
 
     comments = (Comment.query
                 .filter_by(article_id=article.id)
                 .order_by(Comment.created_at.asc())
                 .all())
-
-    username = session.get("username")
-    user = User.query.filter_by(username=username).first() if username else None
 
     return render_template(
         'clanek_detail.html',
@@ -601,6 +631,21 @@ def delete_article(article_id):
         return redirect(url_for('main.clanek_detail', article_id=article_id))
 
     article = Article.query.get_or_404(article_id)
+
+    # editor může mazat jen svoje články
+    if user.role == 'editor' and article.author_id != user.id:
+        return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+    # moderátor nemůže mazat články admina
+    if user.role == 'moderator' and article.author.role == 'admin':
+        return redirect(url_for('main.clanek_detail', article_id=article_id))
+
+    # ověření hesla před smazáním
+    password = request.form.get('confirm_password', '')
+    if not user.check_password(password):
+        return redirect(url_for('main.clanek_detail', article_id=article_id,
+                                _anchor='delete-error'))
+
     db.session.delete(article)
     db.session.commit()
 

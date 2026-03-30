@@ -244,6 +244,41 @@ class UserFavoriteCategory(db.Model):
     )
 
 
+class ArticleView(db.Model):
+    """Zaznamenává unikátní zobrazení článku per uživatel nebo IP."""
+    __tablename__ = 'article_views'
+
+    id = db.Column(db.Integer, primary_key=True)
+    article_id = db.Column(db.Integer, db.ForeignKey('articles.id', ondelete='CASCADE'), nullable=False)
+    user_id    = db.Column(db.Integer, db.ForeignKey('users.id',    ondelete='SET NULL'), nullable=True)
+    ip_address = db.Column(db.String(45), nullable=True)   # IPv4 i IPv6
+    viewed_at  = db.Column(db.Date, nullable=False)         # jen datum — unikátnost per den
+
+    article = db.relationship('Article', backref=db.backref('article_views', cascade='all, delete-orphan', passive_deletes=True))
+    user    = db.relationship('User',    backref='article_views')
+
+    __table_args__ = (
+        # jeden záznam per (článek, uživatel, den) nebo (článek, IP, den)
+        db.UniqueConstraint('article_id', 'user_id',    'viewed_at', name='uq_view_user'),
+        db.UniqueConstraint('article_id', 'ip_address', 'viewed_at', name='uq_view_ip'),
+    )
+
+    @staticmethod
+    def unique_count(article_id: int) -> int:
+        """Celkový počet unikátních návštěvníků (přihlášení + anonymní)."""
+        logged_in = (
+            db.session.query(func.count(func.distinct(ArticleView.user_id)))
+            .filter(ArticleView.article_id == article_id, ArticleView.user_id.isnot(None))
+            .scalar() or 0
+        )
+        anonymous = (
+            db.session.query(func.count(func.distinct(ArticleView.ip_address)))
+            .filter(ArticleView.article_id == article_id, ArticleView.user_id.is_(None))
+            .scalar() or 0
+        )
+        return logged_in + anonymous
+
+
 class UserFollow(db.Model):
     __tablename__ = "user_follows"
     id = db.Column(db.Integer, primary_key=True)

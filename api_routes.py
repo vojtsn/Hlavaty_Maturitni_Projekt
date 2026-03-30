@@ -7,7 +7,7 @@ from flask import Blueprint, request, jsonify, current_app
 from werkzeug.security import check_password_hash
 from werkzeug.utils import secure_filename
 
-from models import db, User, Article, ApiToken, Category
+from models import db, User, Article, ApiToken, Category, ArticleView
 
 api_bp = Blueprint("api", __name__)
 
@@ -83,7 +83,7 @@ def api_login():
     db.session.add(ApiToken(token=token_value, user_id=user.id))
     db.session.commit()
 
-    return jsonify({"ok": True, "token": token_value, "role": user.role, "username": user.username}), 200
+    return jsonify({"ok": True, "token": token_value, "role": user.role, "username": user.username, "user_id": user.id}), 200
 
 
 @api_bp.route("/api/articles", methods=["POST"])
@@ -168,7 +168,8 @@ def api_list_articles():
             "id": a.id,
             "title": a.title,
             "created_at": a.created_at.isoformat() if a.created_at else None,
-            "author_id": a.author_id
+            "author_id": a.author_id,
+            "author": a.author.username if a.author else None,
         })
     return jsonify({"ok": True, "articles": out}), 200
 
@@ -273,8 +274,9 @@ def api_article_stats(article_id):
     return jsonify({
         "ok": True,
         "stats": {
-            "views":    a.views or 0,
-            "likes":    a.like_count(),
-            "comments": len(a.comments),
+            "views":        a.views or 0,
+            "unique_views": ArticleView.unique_count(article_id),
+            "likes":        a.like_count(),
+            "comments":     len(a.comments),
         }
     }), 200
