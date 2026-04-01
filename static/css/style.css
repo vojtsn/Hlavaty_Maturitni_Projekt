@@ -1732,3 +1732,218 @@ mark {
     margin-top: 4px;
     line-height: 1.5;
 }
+
+/* =====================================================
+   RESPONZIVNÍ ÚPRAVY
+   ===================================================== */
+
+/* ── Navbar na mobilu ── */
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    .navbar {
+        padding: 8px 12px;
+    }
+
+    /* search bar se zúží */
+    .search-form {
+        max-width: 160px;
+    }
+
+    /* nav-right: méně místa, schováme text u tlačítek */
+    .nav-right {
+        gap: 6px;
+    }
+
+    .btn-link {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}
+
+/* ── Container ── */
+@media (max-width: 600px) {
+    .container {
+        padding: 12px 10px;
+    }
+
+    .page-title {
+        font-size: 22px;
+    }
+}
+
+/* ── Navbar: search schovat na velmi malých ── */
+@media (max-width: 400px) {
+    .nav-center {
+        display: none;
+    }
+}
+
+/* ── Article card ── */
+@media (max-width: 600px) {
+    .article-card {
+        padding: 12px 14px;
+    }
+
+    .article-title {
+        font-size: 17px;
+    }
+
+    .article-meta {
+        flex-wrap: wrap;
+        font-size: 12px;
+    }
+
+    .article-perex {
+        font-size: 14px;
+    }
+}
+
+/* ── Article detail ── */
+@media (max-width: 600px) {
+    .article-detail {
+        padding: 16px 14px;
+        border-radius: 10px;
+    }
+
+    .detail-title {
+        font-size: 24px;
+    }
+
+    .detail-perex {
+        font-size: 16px;
+    }
+
+    .article-content {
+        font-size: 15px;
+    }
+
+    /* tabulky v článku na mobilu scrollovatelné */
+    .markdown-body table {
+        display: block;
+        overflow-x: auto;
+    }
+}
+
+/* ── Profil ── */
+@media (max-width: 600px) {
+    .profile-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .profile-avatar .avatar {
+        width: 100px;
+        height: 100px;
+    }
+
+    .profile-name {
+        font-size: 24px;
+    }
+
+    .profile-actions {
+        justify-content: center;
+    }
+
+    /* role badge na mobilu ne absolutně — přirozeně v toku */
+    .role-badge {
+        position: static;
+        display: inline-block;
+        margin-top: 6px;
+    }
+}
+
+/* ── Veřejný profil ── */
+@media (max-width: 600px) {
+    .pub-profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .pub-profile-stats {
+        justify-content: center;
+    }
+
+    .pub-tabs {
+        flex-wrap: wrap;
+    }
+
+    .pub-tab {
+        padding: 6px 10px;
+        font-size: 0.82rem;
+    }
+}
+
+/* ── Sledovaní ── */
+@media (max-width: 600px) {
+    .followed-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 400px) {
+    .followed-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Upravit profil ── */
+@media (max-width: 600px) {
+    .edit-profile-card {
+        padding: 18px 14px;
+        margin: 12px auto;
+    }
+}
+
+/* ── Komentáře ── */
+@media (max-width: 600px) {
+    .replies {
+        margin-left: 8px;
+    }
+
+    .reply-form {
+        margin-left: 8px;
+    }
+
+    .reply-hint {
+        margin-left: 8px;
+    }
+
+    .comment-meta {
+        font-size: 12px;
+    }
+}
+
+/* ── Categories bar ── */
+@media (max-width: 600px) {
+    .categories-bar {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+
+    .category-tag {
+        font-size: 0.82rem;
+        padding: 4px 10px;
+    }
+}
+
+/* ── Overlay (sledující/sledovaní) ── */
+@media (max-width: 480px) {
+    .overlay-card {
+        max-width: 95vw;
+        padding: 16px 14px;
+    }
+}
+
+/* ── Like řádek v article detailu ── */
+@media (max-width: 400px) {
+    .like-row {
+        flex-wrap: wrap;
+    }
+}
