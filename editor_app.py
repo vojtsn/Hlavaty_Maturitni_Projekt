@@ -248,6 +248,7 @@ class EditorWindow(QMainWindow):
             }
         """)
         self._article_list.currentRowChanged.connect(self._on_article_selected)
+        self._article_list.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         left_frame = QVBoxLayout()
         lbl_articles = QLabel("Články")
@@ -349,6 +350,7 @@ class EditorWindow(QMainWindow):
         self._cat_scroll = QScrollArea()
         self._cat_scroll.setWidgetResizable(True)
         self._cat_scroll.setFixedWidth(190)
+        self._cat_scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._cat_scroll.setStyleSheet("""
             QScrollArea { background: white; border-radius: 10px; border: 1px solid #ccc; }
         """)
@@ -495,15 +497,7 @@ class EditorWindow(QMainWindow):
             self._toast.show_msg(f"Chyba čtení souboru: {ex}")
             return
 
-        # první řádek jako titulek pokud je titulek prázdný
-        lines = text.splitlines()
-        if lines and not self._title_input.text().strip():
-            self._title_input.setText(lines[0].strip())
-            body = '\n'.join(lines[1:]).lstrip('\n')
-        else:
-            body = text
-
-        self._content_input.setPlainText(body)
+        self._content_input.setPlainText(text)
         self._toast.show_msg(f"Importováno z: {os.path.basename(fp)}")
 
     def _on_upload_image(self):

@@ -134,6 +134,30 @@ def delete_category(cat_id):
     return redirect(url_for("admin.categories"))
 
 
+@admin_bp.route("/categories/edit/<int:cat_id>", methods=["POST"])
+@admin_login_required
+def edit_category(cat_id):
+    cat = Category.query.get_or_404(cat_id)
+    name = (request.form.get("name") or "").strip()
+    description = (request.form.get("description") or "").strip()
+
+    if not name:
+        return redirect(url_for("admin.categories"))
+
+    new_slug = slugify(name)
+
+    # zkontroluj duplicitu slugu (ignoruj aktuální kategorii)
+    existing = Category.query.filter_by(slug=new_slug).first()
+    if existing and existing.id != cat_id:
+        return redirect(url_for("admin.categories"))
+
+    cat.name = name
+    cat.slug = new_slug
+    cat.description = description or None
+    db.session.commit()
+    return redirect(url_for("admin.categories"))
+
+
 # ───────────────
 # CHANGE ROLE
 # ───────────────

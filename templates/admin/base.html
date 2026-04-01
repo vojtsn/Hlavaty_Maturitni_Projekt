@@ -7,14 +7,22 @@
 </head>
 <body>
 
-<nav style="margin-bottom: 16px;">
-  <a href="{{ url_for('admin.users') }}">Uživatelé</a>
-  | <a href="{{ url_for('admin.categories') }}">Kategorie</a>
-  {% if session.get("admin_logged_in") %}
-    | <a href="{{ url_for('admin.logout') }}">Odhlásit</a>
-  {% else %}
-    | <a href="{{ url_for('admin.login') }}">Přihlásit</a>
-  {% endif %}
+<nav style="margin-bottom: 16px; display:flex; align-items:center; gap:24px; padding:12px 20px;
+     background:white; border-bottom:1px solid #e0e0e0;">
+  <span style="font-family:'Arial Black', Arial, sans-serif; font-size:22px;
+               font-weight:900; letter-spacing:-0.5px; color:#0077cc;">
+    Info<span style="color:#111;">Box</span>
+    <span style="font-size:12px; font-weight:400; color:#888; margin-left:6px;">Admin</span>
+  </span>
+  <div style="display:flex; gap:16px; align-items:center;">
+    <a href="{{ url_for('admin.users') }}">Uživatelé</a>
+    | <a href="{{ url_for('admin.categories') }}">Kategorie</a>
+    {% if session.get("admin_logged_in") %}
+      | <a href="{{ url_for('admin.logout') }}">Odhlásit</a>
+    {% else %}
+      | <a href="{{ url_for('admin.login') }}">Přihlásit</a>
+    {% endif %}
+  </div>
 </nav>
 
 {% block content %}{% endblock %}
